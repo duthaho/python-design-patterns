@@ -32,19 +32,25 @@ Design patterns are typical solutions to recurring problems in software design. 
 ### Creational Patterns
 Creational patterns deal with object creation mechanisms, trying to create objects in a manner suitable to the situation. Examples include:
 - Factory Method
-    | Exercise           | Code                                                                            |
-    |--------------------|---------------------------------------------------------------------------------|
-    | Basic Example      | [main.py](./creational/01-factory-method/main.py)                               |
-    | Message Queue      | [message_queue.py](./creational/01-factory-method/message_queue.py)             |
-    | Document Exporter  | [document_exporter.py](./creational/01-factory-method/document_exporter.py)     |
-    | Data Exporter      | [data_exporter.py](./creational/01-factory-method/exporter/data_exporter.py)    |
+    | Exercise              | Code                                                                                                |
+    |-----------------------|-----------------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./creational/01-factory-method/main.py)                                                   |
+    | Message Queue         | [message_queue.py](./creational/01-factory-method/message_queue.py)                                 |
+    | Document Exporter     | [document_exporter.py](./creational/01-factory-method/document_exporter.py)                         |
+    | Data Exporter         | [data_exporter.py](./creational/01-factory-method/exporter/data_exporter.py)                        |
 - Abstract Factory
-    | Exercise           | Code                                                                            |
-    |--------------------|---------------------------------------------------------------------------------|
-    | Basic Example      | [main.py](./creational/02-abstract-factory/main.py)                             |
-    | Cloud Provisioning | [cloud_provisioning.py](./creational/02-abstract-factory/cloud_provisioning.py) |
-    | Data Processing    | [data_processing.py](./creational/02-abstract-factory/data_processing.py)       |
+    | Exercise              | Code                                                                                                |
+    |-----------------------|-----------------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./creational/02-abstract-factory/main.py)                                                 |
+    | Cloud Provisioning    | [cloud_provisioning.py](./creational/02-abstract-factory/cloud_provisioning.py)                     |
+    | Data Processing       | [data_processing.py](./creational/02-abstract-factory/data_processing.py)                           |
 - Builder
+    | Exercise              | Code                                                                                                |
+    |-----------------------|-----------------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./creational/03-builder/main.py)                                                          |
+    | Query Builder         | [query_builder.py](./creational/03-builder/query_builder.py)                                        |
+    | API Request Builder   | [api_request_builder.py](./creational/03-builder/api_request_builder.py)                            |
+    | Server Config Builder | [server_configuration_builder.py](./creational/03-builder/exporter/server_configuration_builder.py) |
 - Prototype
 - Singleton
 
