@@ -52,6 +52,12 @@ Creational patterns deal with object creation mechanisms, trying to create objec
     | API Request Builder   | [api_request_builder.py](./creational/03-builder/api_request_builder.py)                            |
     | Server Config Builder | [server_configuration_builder.py](./creational/03-builder/exporter/server_configuration_builder.py) |
 - Prototype
+    | Exercise              | Code                                                                                                |
+    |-----------------------|-----------------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./creational/04-prototype/main.py)                                                        |
+    | Template BluePrint    | [template_blueprint.py](./creational/04-prototype/template_blueprint.py)                            |
+    | Service Configuration | [service_configuration.py](./creational/04-prototype/service_configuration.py)                      |
+    | Lazy Configuration    | [lazy_configuration.py](./creational/04-prototype/exporter/lazy_configuration.py)                   |
 - Singleton
 
 ### Structural Patterns
