@@ -59,6 +59,12 @@ Creational patterns deal with object creation mechanisms, trying to create objec
     | Service Configuration | [service_configuration.py](./creational/04-prototype/service_configuration.py)                      |
     | Lazy Configuration    | [lazy_configuration.py](./creational/04-prototype/exporter/lazy_configuration.py)                   |
 - Singleton
+    | Exercise              | Code                                                                                                |
+    |-----------------------|-----------------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./creational/05-singleton/main.py)                                                        |
+    | Log Bus               | [log_bus.py](./creational/05-singleton/log_bus.py)                                                  |
+    | Connection Pool       | [connection_pool.py](./creational/05-singleton/connection_pool.py)                                  |
+    | Application Bootstrap | [application_bootstrap.py](./creational/05-singleton/exporter/application_bootstrap.py)             |
 
 ### Structural Patterns
 Structural patterns focus on the composition of classes and objects. Examples include:
