@@ -8,9 +8,10 @@ from abc import ABC, abstractmethod
 # ENUMS AND DATA CLASSES
 # ============================================================================
 
+
 class ServerType(Enum):
     WEB = "web"
-    DATABASE = "database" 
+    DATABASE = "database"
     CACHE = "cache"
     LOAD_BALANCER = "load_balancer"
 
@@ -31,10 +32,11 @@ class Protocol(Enum):
 @dataclass(frozen=True)
 class ServerSpecs:
     """Server hardware specifications"""
+
     cpu_cores: int
     ram_gb: int
     storage_gb: int
-    
+
     def validate(self) -> List[str]:
         errors = []
         if self.cpu_cores <= 0:
@@ -46,14 +48,15 @@ class ServerSpecs:
         return errors
 
 
-@dataclass(frozen=True) 
+@dataclass(frozen=True)
 class NetworkConfig:
     """Network configuration settings"""
+
     ports: tuple[int, ...] = field(default_factory=tuple)
     protocols: tuple[Protocol, ...] = field(default_factory=tuple)
     load_balancer_enabled: bool = False
     ssl_enabled: bool = False
-    
+
     def validate(self) -> List[str]:
         errors = []
         if len(self.ports) != len(self.protocols):
@@ -69,11 +72,12 @@ class NetworkConfig:
 @dataclass(frozen=True)
 class SecurityConfig:
     """Security configuration settings"""
+
     firewall_rules: tuple[str, ...] = field(default_factory=tuple)
     ssl_cert_path: str = ""
     ssl_key_path: str = ""
     auth_method: str = "basic"  # basic, oauth, jwt
-    
+
     def validate(self) -> List[str]:
         errors = []
         if self.ssl_cert_path and not self.ssl_key_path:
@@ -88,11 +92,12 @@ class SecurityConfig:
 @dataclass(frozen=True)
 class AppDeploymentConfig:
     """Application deployment configuration"""
+
     environment_vars: Dict[str, str] = field(default_factory=dict)
     health_check_path: str = ""
     health_check_interval_seconds: int = 30
     restart_policy: str = "always"  # always, on-failure, never
-    
+
     def validate(self) -> List[str]:
         errors = []
         if self.health_check_interval_seconds <= 0:
@@ -105,13 +110,14 @@ class AppDeploymentConfig:
 @dataclass(frozen=True)
 class ServerConfiguration:
     """Final immutable server configuration"""
+
     server_type: ServerType
     environment: Environment
     specs: ServerSpecs
     network: NetworkConfig
     security: SecurityConfig
     deployment: AppDeploymentConfig
-    
+
     def validate_complete_config(self) -> List[str]:
         """Perform final cross-component validation"""
         # TODO: Implement comprehensive validation that checks:
@@ -120,9 +126,16 @@ class ServerConfiguration:
         # - Environment-specific rules are followed
         # - Security requirements based on environment
         errors = []
-        if self.server_type == ServerType.WEB and Protocol.HTTP not in self.network.protocols and Protocol.HTTPS not in self.network.protocols:
+        if (
+            self.server_type == ServerType.WEB
+            and Protocol.HTTP not in self.network.protocols
+            and Protocol.HTTPS not in self.network.protocols
+        ):
             errors.append("Web server must have HTTP or HTTPS protocol configured")
-        if self.environment == Environment.PRODUCTION and not self.security.ssl_cert_path:
+        if (
+            self.environment == Environment.PRODUCTION
+            and not self.security.ssl_cert_path
+        ):
             errors.append("Production environment requires SSL certificate to be set")
         return errors
 
@@ -131,10 +144,12 @@ class ServerConfiguration:
 # BUILDER STATE MANAGEMENT
 # ============================================================================
 
+
 class BuilderState(Enum):
     """States that the builder can be in"""
+
     INITIAL = "initial"
-    SPECS_SET = "specs_set" 
+    SPECS_SET = "specs_set"
     NETWORK_CONFIGURED = "network_configured"
     SECURITY_CONFIGURED = "security_configured"
     DEPLOYMENT_READY = "deployment_ready"
@@ -144,10 +159,11 @@ class BuilderState(Enum):
 @dataclass
 class BuilderOperation:
     """Represents a single builder operation for rollback functionality"""
+
     operation_name: str
     old_state: BuilderState
     old_values: Dict[str, Any]
-    
+
     # TODO: Add any additional data needed for rollback
 
 
@@ -155,14 +171,15 @@ class BuilderOperation:
 # VALIDATION FRAMEWORK
 # ============================================================================
 
+
 class ValidationRule(ABC):
     """Abstract base class for validation rules"""
-    
+
     @abstractmethod
-    def validate(self, builder: 'ServerConfigurationBuilder') -> List[str]:
+    def validate(self, builder: "ServerConfigurationBuilder") -> List[str]:
         """Return list of validation error messages"""
         pass
-    
+
     @abstractmethod
     def applies_to_state(self, state: BuilderState) -> bool:
         """Check if this rule applies to the given builder state"""
@@ -171,8 +188,8 @@ class ValidationRule(ABC):
 
 class SpecsValidationRule(ValidationRule):
     """Validates server specifications"""
-    
-    def validate(self, builder: 'ServerConfigurationBuilder') -> List[str]:
+
+    def validate(self, builder: "ServerConfigurationBuilder") -> List[str]:
         # TODO: Implement validation logic for server specs
         # Check things like:
         # - Minimum requirements for server type
@@ -182,7 +199,7 @@ class SpecsValidationRule(ValidationRule):
         if builder._specs:
             errors.extend(builder._specs.validate())
         return errors
-    
+
     def applies_to_state(self, state: BuilderState) -> bool:
         # TODO: Return True if validation should run in this state
         return state == BuilderState.SPECS_SET
@@ -190,8 +207,8 @@ class SpecsValidationRule(ValidationRule):
 
 class NetworkSecurityValidationRule(ValidationRule):
     """Validates that network and security configs are compatible"""
-    
-    def validate(self, builder: 'ServerConfigurationBuilder') -> List[str]:
+
+    def validate(self, builder: "ServerConfigurationBuilder") -> List[str]:
         # TODO: Implement validation logic such as:
         # - If SSL is enabled, HTTPS protocol should be used
         # - If load balancer is enabled, multiple ports might be needed
@@ -202,16 +219,19 @@ class NetworkSecurityValidationRule(ValidationRule):
         if builder._security:
             errors.extend(builder._security.validate())
         return errors
-    
+
     def applies_to_state(self, state: BuilderState) -> bool:
         # TODO: Return True if both network and security are configured
-        return state in {BuilderState.NETWORK_CONFIGURED, BuilderState.SECURITY_CONFIGURED}
+        return state in {
+            BuilderState.NETWORK_CONFIGURED,
+            BuilderState.SECURITY_CONFIGURED,
+        }
 
 
 class EnvironmentValidationRule(ValidationRule):
     """Validates environment-specific requirements"""
-    
-    def validate(self, builder: 'ServerConfigurationBuilder') -> List[str]:
+
+    def validate(self, builder: "ServerConfigurationBuilder") -> List[str]:
         # TODO: Implement environment-specific validation:
         # - Production requires SSL
         # - Production requires specific minimum specs
@@ -220,31 +240,40 @@ class EnvironmentValidationRule(ValidationRule):
         if builder._environment == Environment.PRODUCTION:
             if builder._specs:
                 if builder._specs.cpu_cores < 2:
-                    errors.append("Production environment requires at least 2 CPU cores")
+                    errors.append(
+                        "Production environment requires at least 2 CPU cores"
+                    )
                 if builder._specs.ram_gb < 4:
                     errors.append("Production environment requires at least 4 GB RAM")
             if builder._security and not builder._security.ssl_cert_path:
-                errors.append("Production environment requires SSL certificate to be set")
+                errors.append(
+                    "Production environment requires SSL certificate to be set"
+                )
         return errors
-    
+
     def applies_to_state(self, state: BuilderState) -> bool:
         # TODO: Implement state check
-        return state in {BuilderState.SPECS_SET, BuilderState.SECURITY_CONFIGURED, BuilderState.DEPLOYMENT_READY}
+        return state in {
+            BuilderState.SPECS_SET,
+            BuilderState.SECURITY_CONFIGURED,
+            BuilderState.DEPLOYMENT_READY,
+        }
 
 
 # ============================================================================
 # MAIN BUILDER CLASS
 # ============================================================================
 
+
 class ServerConfigurationBuilder:
     """
     Advanced builder with state management, validation, and rollback capability
     """
-    
+
     def __init__(self):
         # Current state
         self._state: BuilderState = BuilderState.INITIAL
-        
+
         # Configuration components (mutable during building)
         self._server_type: Optional[ServerType] = None
         self._environment: Optional[Environment] = None
@@ -252,21 +281,21 @@ class ServerConfigurationBuilder:
         self._network: Optional[NetworkConfig] = None
         self._security: Optional[SecurityConfig] = None
         self._deployment: Optional[AppDeploymentConfig] = None
-        
+
         # Operation history for rollback
         self._operation_history: List[BuilderOperation] = []
-        
+
         # Validation rules
         self._validation_rules: List[ValidationRule] = [
             SpecsValidationRule(),
-            NetworkSecurityValidationRule(), 
-            EnvironmentValidationRule()
+            NetworkSecurityValidationRule(),
+            EnvironmentValidationRule(),
         ]
-    
+
     # ========================================================================
     # STATE MANAGEMENT
     # ========================================================================
-    
+
     def _transition_to_state(self, new_state: BuilderState) -> None:
         """Transition to a new builder state"""
         # TODO: Implement state transition logic
@@ -274,27 +303,31 @@ class ServerConfigurationBuilder:
         # - Update current state
         # - Run applicable validations
         if not self._validate_state_transition(self._state, new_state):
-            raise ValueError(f"Invalid state transition from {self._state} to {new_state}")
+            raise ValueError(
+                f"Invalid state transition from {self._state} to {new_state}"
+            )
         self._state = new_state
         self._run_validations()
-    
-    def _validate_state_transition(self, from_state: BuilderState, to_state: BuilderState) -> bool:
+
+    def _validate_state_transition(
+        self, from_state: BuilderState, to_state: BuilderState
+    ) -> bool:
         """Check if state transition is allowed"""
         # TODO: Define valid state transitions
         # For example: INITIAL -> SPECS_SET -> NETWORK_CONFIGURED -> etc.
         if from_state == to_state:
             return True
-        
+
         valid_transitions = {
             BuilderState.INITIAL: [BuilderState.SPECS_SET],
             BuilderState.SPECS_SET: [BuilderState.NETWORK_CONFIGURED],
             BuilderState.NETWORK_CONFIGURED: [BuilderState.SECURITY_CONFIGURED],
             BuilderState.SECURITY_CONFIGURED: [BuilderState.DEPLOYMENT_READY],
             BuilderState.DEPLOYMENT_READY: [BuilderState.READY_TO_BUILD],
-            BuilderState.READY_TO_BUILD: []
+            BuilderState.READY_TO_BUILD: [],
         }
         return to_state in valid_transitions.get(from_state, [])
-    
+
     def _run_validations(self) -> None:
         """Run all applicable validation rules for current state"""
         # TODO: Implement validation running logic
@@ -307,11 +340,11 @@ class ServerConfigurationBuilder:
                 errors.extend(rule.validate(self))
         if errors:
             raise ValueError("Validation errors: " + "; ".join(errors))
-        
+
     # ========================================================================
-    # ROLLBACK FUNCTIONALITY  
+    # ROLLBACK FUNCTIONALITY
     # ========================================================================
-    
+
     def _save_operation(self, operation_name: str) -> None:
         """Save current state before making changes"""
         # TODO: Implement operation saving for rollback
@@ -324,16 +357,14 @@ class ServerConfigurationBuilder:
             "specs": self._specs,
             "network": self._network,
             "security": self._security,
-            "deployment": self._deployment
+            "deployment": self._deployment,
         }
         operation = BuilderOperation(
-            operation_name=operation_name,
-            old_state=self._state,
-            old_values=old_values
+            operation_name=operation_name, old_state=self._state, old_values=old_values
         )
         self._operation_history.append(operation)
-    
-    def rollback(self, steps: int = 1) -> 'ServerConfigurationBuilder':
+
+    def rollback(self, steps: int = 1) -> "ServerConfigurationBuilder":
         """Rollback the last N operations"""
         # TODO: Implement rollback logic
         # - Validate steps parameter
@@ -351,12 +382,12 @@ class ServerConfigurationBuilder:
             self._security = operation.old_values["security"]
             self._deployment = operation.old_values["deployment"]
         return self
-    
+
     # ========================================================================
     # BUILDER METHODS - Phase 1: Basic Setup
     # ========================================================================
-    
-    def set_server_type(self, server_type: ServerType) -> 'ServerConfigurationBuilder':
+
+    def set_server_type(self, server_type: ServerType) -> "ServerConfigurationBuilder":
         """Set the server type - must be called first"""
         # TODO: Implement
         # - Check current state allows this operation
@@ -368,8 +399,8 @@ class ServerConfigurationBuilder:
         self._save_operation("set_server_type")
         self._server_type = server_type
         return self
-    
-    def set_environment(self, environment: Environment) -> 'ServerConfigurationBuilder':
+
+    def set_environment(self, environment: Environment) -> "ServerConfigurationBuilder":
         """Set the deployment environment"""
         # TODO: Implement similar to set_server_type
         if self._state != BuilderState.INITIAL:
@@ -378,8 +409,10 @@ class ServerConfigurationBuilder:
         self._environment = environment
         self._transition_to_state(BuilderState.SPECS_SET)
         return self
-    
-    def set_specs(self, cpu_cores: int, ram_gb: int, storage_gb: int) -> 'ServerConfigurationBuilder':
+
+    def set_specs(
+        self, cpu_cores: int, ram_gb: int, storage_gb: int
+    ) -> "ServerConfigurationBuilder":
         """Set server hardware specifications"""
         # TODO: Implement
         # - Validate current state
@@ -392,12 +425,12 @@ class ServerConfigurationBuilder:
         self._specs = ServerSpecs(cpu_cores, ram_gb, storage_gb)
         self._transition_to_state(BuilderState.NETWORK_CONFIGURED)
         return self
-    
+
     # ========================================================================
     # BUILDER METHODS - Phase 2: Network Configuration
     # ========================================================================
-    
-    def add_port(self, port: int, protocol: Protocol) -> 'ServerConfigurationBuilder':
+
+    def add_port(self, port: int, protocol: Protocol) -> "ServerConfigurationBuilder":
         """Add a port with associated protocol - only available after specs are set"""
         # TODO: Implement
         # - Check state allows network configuration
@@ -415,15 +448,17 @@ class ServerConfigurationBuilder:
                 ports=self._network.ports + (port,),
                 protocols=self._network.protocols + (protocol,),
                 load_balancer_enabled=self._network.load_balancer_enabled,
-                ssl_enabled=self._network.ssl_enabled
+                ssl_enabled=self._network.ssl_enabled,
             )
         return self
-    
-    def enable_load_balancer(self) -> 'ServerConfigurationBuilder':
+
+    def enable_load_balancer(self) -> "ServerConfigurationBuilder":
         """Enable load balancer - only for web servers"""
         # TODO: Implement with server type validation
         if self._state != BuilderState.NETWORK_CONFIGURED:
-            raise ValueError("Load balancer can only be enabled in NETWORK_CONFIGURED state")
+            raise ValueError(
+                "Load balancer can only be enabled in NETWORK_CONFIGURED state"
+            )
         if self._server_type != ServerType.WEB:
             raise ValueError("Load balancer can only be enabled for web servers")
         self._save_operation("enable_load_balancer")
@@ -434,11 +469,11 @@ class ServerConfigurationBuilder:
                 ports=self._network.ports,
                 protocols=self._network.protocols,
                 load_balancer_enabled=True,
-                ssl_enabled=self._network.ssl_enabled
+                ssl_enabled=self._network.ssl_enabled,
             )
         return self
-    
-    def enable_ssl(self) -> 'ServerConfigurationBuilder':
+
+    def enable_ssl(self) -> "ServerConfigurationBuilder":
         """Enable SSL - affects security configuration requirements"""
         # TODO: Implement
         if self._state != BuilderState.NETWORK_CONFIGURED:
@@ -451,31 +486,35 @@ class ServerConfigurationBuilder:
                 ports=self._network.ports,
                 protocols=self._network.protocols,
                 load_balancer_enabled=self._network.load_balancer_enabled,
-                ssl_enabled=True
+                ssl_enabled=True,
             )
         return self
-    
-    def finalize_network_config(self) -> 'ServerConfigurationBuilder':
+
+    def finalize_network_config(self) -> "ServerConfigurationBuilder":
         """Finalize network configuration and move to security phase"""
         # TODO: Implement
         # - Create NetworkConfig object
         # - Validate network configuration
         # - Transition to NETWORK_CONFIGURED state
         if self._state != BuilderState.NETWORK_CONFIGURED:
-            raise ValueError("Network configuration can only be finalized in NETWORK_CONFIGURED state")
+            raise ValueError(
+                "Network configuration can only be finalized in NETWORK_CONFIGURED state"
+            )
         self._save_operation("finalize_network_config")
         self._transition_to_state(BuilderState.SECURITY_CONFIGURED)
         return self
-    
+
     # ========================================================================
-    # BUILDER METHODS - Phase 3: Security Configuration  
+    # BUILDER METHODS - Phase 3: Security Configuration
     # ========================================================================
-    
-    def add_firewall_rule(self, rule: str) -> 'ServerConfigurationBuilder':
+
+    def add_firewall_rule(self, rule: str) -> "ServerConfigurationBuilder":
         """Add firewall rule - only available after network is configured"""
         # TODO: Implement
         if self._state != BuilderState.SECURITY_CONFIGURED:
-            raise ValueError("Firewall rules can only be added in SECURITY_CONFIGURED state")
+            raise ValueError(
+                "Firewall rules can only be added in SECURITY_CONFIGURED state"
+            )
         self._save_operation("add_firewall_rule")
         if not self._security:
             self._security = SecurityConfig(firewall_rules=(rule,))
@@ -484,34 +523,44 @@ class ServerConfigurationBuilder:
                 firewall_rules=self._security.firewall_rules + (rule,),
                 ssl_cert_path=self._security.ssl_cert_path,
                 ssl_key_path=self._security.ssl_key_path,
-                auth_method=self._security.auth_method
+                auth_method=self._security.auth_method,
             )
         return self
-    
-    def set_ssl_certificates(self, cert_path: str, key_path: str) -> 'ServerConfigurationBuilder':
+
+    def set_ssl_certificates(
+        self, cert_path: str, key_path: str
+    ) -> "ServerConfigurationBuilder":
         """Set SSL certificate paths - only if SSL is enabled"""
         # TODO: Implement with SSL validation
         if self._state != BuilderState.SECURITY_CONFIGURED:
-            raise ValueError("SSL certificates can only be set in SECURITY_CONFIGURED state")
+            raise ValueError(
+                "SSL certificates can only be set in SECURITY_CONFIGURED state"
+            )
         if not self._network or not self._network.ssl_enabled:
-            raise ValueError("SSL must be enabled in network configuration before setting certificates")
+            raise ValueError(
+                "SSL must be enabled in network configuration before setting certificates"
+            )
         self._save_operation("set_ssl_certificates")
         if not self._security:
-            self._security = SecurityConfig(ssl_cert_path=cert_path, ssl_key_path=key_path)
+            self._security = SecurityConfig(
+                ssl_cert_path=cert_path, ssl_key_path=key_path
+            )
         else:
             self._security = SecurityConfig(
                 firewall_rules=self._security.firewall_rules,
                 ssl_cert_path=cert_path,
                 ssl_key_path=key_path,
-                auth_method=self._security.auth_method
+                auth_method=self._security.auth_method,
             )
         return self
-    
-    def set_auth_method(self, auth_method: str) -> 'ServerConfigurationBuilder':
+
+    def set_auth_method(self, auth_method: str) -> "ServerConfigurationBuilder":
         """Set authentication method"""
         # TODO: Implement with validation of supported methods
         if self._state != BuilderState.SECURITY_CONFIGURED:
-            raise ValueError("Authentication method can only be set in SECURITY_CONFIGURED state")
+            raise ValueError(
+                "Authentication method can only be set in SECURITY_CONFIGURED state"
+            )
         if auth_method not in {"basic", "oauth", "jwt"}:
             raise ValueError(f"Unsupported authentication method: {auth_method}")
         self._save_operation("set_auth_method")
@@ -522,28 +571,34 @@ class ServerConfigurationBuilder:
                 firewall_rules=self._security.firewall_rules,
                 ssl_cert_path=self._security.ssl_cert_path,
                 ssl_key_path=self._security.ssl_key_path,
-                auth_method=auth_method
+                auth_method=auth_method,
             )
         return self
-    
-    def finalize_security_config(self) -> 'ServerConfigurationBuilder':
+
+    def finalize_security_config(self) -> "ServerConfigurationBuilder":
         """Finalize security configuration"""
         # TODO: Implement
         if self._state != BuilderState.SECURITY_CONFIGURED:
-            raise ValueError("Security configuration can only be finalized in SECURITY_CONFIGURED state")
+            raise ValueError(
+                "Security configuration can only be finalized in SECURITY_CONFIGURED state"
+            )
         self._save_operation("finalize_security_config")
         self._transition_to_state(BuilderState.DEPLOYMENT_READY)
         return self
-    
+
     # ========================================================================
     # BUILDER METHODS - Phase 4: Deployment Configuration
     # ========================================================================
-    
-    def add_environment_variable(self, key: str, value: str) -> 'ServerConfigurationBuilder':
+
+    def add_environment_variable(
+        self, key: str, value: str
+    ) -> "ServerConfigurationBuilder":
         """Add environment variable for application"""
         # TODO: Implement
         if self._state != BuilderState.DEPLOYMENT_READY:
-            raise ValueError("Environment variables can only be added in DEPLOYMENT_READY state")
+            raise ValueError(
+                "Environment variables can only be added in DEPLOYMENT_READY state"
+            )
         self._save_operation("add_environment_variable")
         if not self._deployment:
             self._deployment = AppDeploymentConfig(environment_vars={key: value})
@@ -554,11 +609,13 @@ class ServerConfigurationBuilder:
                 environment_vars=new_env_vars,
                 health_check_path=self._deployment.health_check_path,
                 health_check_interval_seconds=self._deployment.health_check_interval_seconds,
-                restart_policy=self._deployment.restart_policy
+                restart_policy=self._deployment.restart_policy,
             )
         return self
-    
-    def set_health_check(self, path: str, interval_seconds: int = 30) -> 'ServerConfigurationBuilder':
+
+    def set_health_check(
+        self, path: str, interval_seconds: int = 30
+    ) -> "ServerConfigurationBuilder":
         """Configure health check settings"""
         # TODO: Implement
         if self._state != BuilderState.DEPLOYMENT_READY:
@@ -567,17 +624,19 @@ class ServerConfigurationBuilder:
             raise ValueError("Health check interval must be greater than 0 seconds")
         self._save_operation("set_health_check")
         if not self._deployment:
-            self._deployment = AppDeploymentConfig(health_check_path=path, health_check_interval_seconds=interval_seconds)
+            self._deployment = AppDeploymentConfig(
+                health_check_path=path, health_check_interval_seconds=interval_seconds
+            )
         else:
             self._deployment = AppDeploymentConfig(
                 environment_vars=self._deployment.environment_vars,
                 health_check_path=path,
                 health_check_interval_seconds=interval_seconds,
-                restart_policy=self._deployment.restart_policy
+                restart_policy=self._deployment.restart_policy,
             )
         return self
-    
-    def set_restart_policy(self, policy: str) -> 'ServerConfigurationBuilder':
+
+    def set_restart_policy(self, policy: str) -> "ServerConfigurationBuilder":
         """Set container restart policy"""
         # TODO: Implement with policy validation
         if self._state != BuilderState.DEPLOYMENT_READY:
@@ -592,23 +651,25 @@ class ServerConfigurationBuilder:
                 environment_vars=self._deployment.environment_vars,
                 health_check_path=self._deployment.health_check_path,
                 health_check_interval_seconds=self._deployment.health_check_interval_seconds,
-                restart_policy=policy
+                restart_policy=policy,
             )
         return self
-    
-    def finalize_deployment_config(self) -> 'ServerConfigurationBuilder':
+
+    def finalize_deployment_config(self) -> "ServerConfigurationBuilder":
         """Finalize deployment configuration"""
         # TODO: Implement
         if self._state != BuilderState.DEPLOYMENT_READY:
-            raise ValueError("Deployment configuration can only be finalized in DEPLOYMENT_READY state")
+            raise ValueError(
+                "Deployment configuration can only be finalized in DEPLOYMENT_READY state"
+            )
         self._save_operation("finalize_deployment_config")
         self._transition_to_state(BuilderState.READY_TO_BUILD)
         return self
-    
+
     # ========================================================================
     # BUILD METHOD
     # ========================================================================
-    
+
     def build(self) -> ServerConfiguration:
         """Build the final server configuration"""
         # TODO: Implement final build
@@ -618,7 +679,16 @@ class ServerConfigurationBuilder:
         # - Reset builder state
         if self._state != BuilderState.READY_TO_BUILD:
             raise ValueError("Builder is not ready to build the configuration")
-        if not all([self._server_type, self._environment, self._specs, self._network, self._security, self._deployment]):
+        if not all(
+            [
+                self._server_type,
+                self._environment,
+                self._specs,
+                self._network,
+                self._security,
+                self._deployment,
+            ]
+        ):
             raise ValueError("All configuration components must be set before building")
         final_config = ServerConfiguration(
             server_type=self._server_type,
@@ -626,28 +696,30 @@ class ServerConfigurationBuilder:
             specs=self._specs,
             network=self._network,
             security=self._security,
-            deployment=self._deployment
+            deployment=self._deployment,
         )
         errors = final_config.validate_complete_config()
         if errors:
-            raise ValueError("Final configuration validation errors: " + "; ".join(errors))
+            raise ValueError(
+                "Final configuration validation errors: " + "; ".join(errors)
+            )
         self.reset()
         return final_config
-    
+
     # ========================================================================
     # UTILITY METHODS
     # ========================================================================
-    
+
     def get_current_state(self) -> BuilderState:
         """Get current builder state"""
         return self._state
-    
+
     def get_operation_history(self) -> List[str]:
         """Get list of operations performed"""
         # TODO: Return list of operation names from history
         return [op.operation_name for op in self._operation_history]
-    
-    def reset(self) -> 'ServerConfigurationBuilder':
+
+    def reset(self) -> "ServerConfigurationBuilder":
         """Reset builder to initial state"""
         # TODO: Implement reset logic
         self._state = BuilderState.INITIAL
@@ -665,12 +737,13 @@ class ServerConfigurationBuilder:
 # DIRECTOR CLASS
 # ============================================================================
 
+
 class ServerConfigurationDirector:
     """Director for creating common server configurations"""
-    
+
     def __init__(self, builder: ServerConfigurationBuilder):
         self._builder = builder
-    
+
     def create_simple_web_server(self, environment: Environment) -> ServerConfiguration:
         """Create a basic web server configuration"""
         # TODO: Implement using the builder
@@ -679,23 +752,24 @@ class ServerConfigurationDirector:
         # - Configure HTTP/HTTPS ports
         # - Set basic security
         # - Configure for web deployment
-        return self._builder \
-            .set_server_type(ServerType.WEB) \
-            .set_environment(environment) \
-            .set_specs(cpu_cores=2, ram_gb=4, storage_gb=50) \
-            .add_port(80, Protocol.HTTP) \
-            .add_port(443, Protocol.HTTPS) \
-            .enable_ssl() \
-            .finalize_network_config() \
-            .set_ssl_certificates("/path/to/cert", "/path/to/key") \
-            .add_firewall_rule("allow port 80") \
-            .add_firewall_rule("allow port 443") \
-            .finalize_security_config() \
-            .add_environment_variable("APP_ENV", environment.value) \
-            .set_health_check("/health") \
-            .finalize_deployment_config() \
+        return (
+            self._builder.set_server_type(ServerType.WEB)
+            .set_environment(environment)
+            .set_specs(cpu_cores=2, ram_gb=4, storage_gb=50)
+            .add_port(80, Protocol.HTTP)
+            .add_port(443, Protocol.HTTPS)
+            .enable_ssl()
+            .finalize_network_config()
+            .set_ssl_certificates("/path/to/cert", "/path/to/key")
+            .add_firewall_rule("allow port 80")
+            .add_firewall_rule("allow port 443")
+            .finalize_security_config()
+            .add_environment_variable("APP_ENV", environment.value)
+            .set_health_check("/health")
+            .finalize_deployment_config()
             .build()
-    
+        )
+
     def create_production_database_server(self) -> ServerConfiguration:
         """Create a production-ready database server"""
         # TODO: Implement production database configuration
@@ -703,34 +777,36 @@ class ServerConfigurationDirector:
         # - Strict security
         # - Database-specific ports
         # - Production environment settings
-        return self._builder \
-            .set_server_type(ServerType.DATABASE) \
-            .set_environment(Environment.PRODUCTION) \
-            .set_specs(cpu_cores=4, ram_gb=16, storage_gb=200) \
-            .add_port(5432, Protocol.TCP) \
-            .finalize_network_config() \
-            .set_ssl_certificates("/path/to/prod/cert", "/path/to/prod/key") \
-            .add_firewall_rule("allow port 5432") \
-            .finalize_security_config() \
-            .add_environment_variable("DB_ENV", "production") \
-            .set_health_check("/db-health") \
-            .finalize_deployment_config() \
+        return (
+            self._builder.set_server_type(ServerType.DATABASE)
+            .set_environment(Environment.PRODUCTION)
+            .set_specs(cpu_cores=4, ram_gb=16, storage_gb=200)
+            .add_port(5432, Protocol.TCP)
+            .finalize_network_config()
+            .set_ssl_certificates("/path/to/prod/cert", "/path/to/prod/key")
+            .add_firewall_rule("allow port 5432")
+            .finalize_security_config()
+            .add_environment_variable("DB_ENV", "production")
+            .set_health_check("/db-health")
+            .finalize_deployment_config()
             .build()
-    
+        )
+
     def create_development_server(self, server_type: ServerType) -> ServerConfiguration:
         """Create a development server with relaxed settings"""
         # TODO: Implement development configuration
-        return self._builder \
-            .set_server_type(server_type) \
-            .set_environment(Environment.DEVELOPMENT) \
-            .set_specs(cpu_cores=1, ram_gb=2, storage_gb=20) \
-            .add_port(8080, Protocol.HTTP) \
-            .finalize_network_config() \
-            .finalize_security_config() \
-            .add_environment_variable("APP_ENV", "development") \
-            .set_health_check("/health") \
-            .finalize_deployment_config() \
+        return (
+            self._builder.set_server_type(server_type)
+            .set_environment(Environment.DEVELOPMENT)
+            .set_specs(cpu_cores=1, ram_gb=2, storage_gb=20)
+            .add_port(8080, Protocol.HTTP)
+            .finalize_network_config()
+            .finalize_security_config()
+            .add_environment_variable("APP_ENV", "development")
+            .set_health_check("/health")
+            .finalize_deployment_config()
             .build()
+        )
 
 
 # ============================================================================
@@ -739,60 +815,62 @@ class ServerConfigurationDirector:
 
 if __name__ == "__main__":
     # Example of how the builder should work:
-    
+
     builder = ServerConfigurationBuilder()
     director = ServerConfigurationDirector(builder)
-    
+
     try:
         # This should work - step by step configuration
-        config = (builder
-                    .set_server_type(ServerType.WEB)
-                    .set_environment(Environment.PRODUCTION)
-                    .set_specs(cpu_cores=4, ram_gb=8, storage_gb=100)
-                    .add_port(80, Protocol.HTTP)
-                    .add_port(443, Protocol.HTTPS)
-                    .enable_ssl()
-                    .finalize_network_config()
-                    .set_ssl_certificates("/path/to/cert", "/path/to/key")
-                    .add_firewall_rule("allow port 80")
-                    .add_firewall_rule("allow port 443")
-                    .finalize_security_config()
-                    .add_environment_variable("APP_ENV", "production")
-                    .set_health_check("/health")
-                    .finalize_deployment_config()
-                    .build())
-        
+        config = (
+            builder.set_server_type(ServerType.WEB)
+            .set_environment(Environment.PRODUCTION)
+            .set_specs(cpu_cores=4, ram_gb=8, storage_gb=100)
+            .add_port(80, Protocol.HTTP)
+            .add_port(443, Protocol.HTTPS)
+            .enable_ssl()
+            .finalize_network_config()
+            .set_ssl_certificates("/path/to/cert", "/path/to/key")
+            .add_firewall_rule("allow port 80")
+            .add_firewall_rule("allow port 443")
+            .finalize_security_config()
+            .add_environment_variable("APP_ENV", "production")
+            .set_health_check("/health")
+            .finalize_deployment_config()
+            .build()
+        )
+
         print("✅ Configuration built successfully!")
         print(f"Server Type: {config.server_type}")
         print(f"Environment: {config.environment}")
-        
+
     except Exception as e:
         print(f"❌ Configuration failed: {e}")
-    
+
     # Test rollback functionality
     print("\n=== Testing Rollback ===")
     try:
         builder2 = ServerConfigurationBuilder()
-        (builder2
-            .set_server_type(ServerType.WEB)
+        (
+            builder2.set_server_type(ServerType.WEB)
             .set_environment(Environment.DEVELOPMENT)
             .set_specs(cpu_cores=2, ram_gb=4, storage_gb=50)
-            .add_port(8080, Protocol.HTTP))
+            .add_port(8080, Protocol.HTTP)
+        )
         print(f"Current state: {builder2.get_current_state()}")
         print(f"Operations: {builder2.get_operation_history()}")
-        
+
         # Rollback last operation
         builder2.rollback(1)
         print(f"After rollback: {builder2.get_current_state()}")
-        
+
     except Exception as e:
         print(f"❌ Rollback test failed: {e}")
-    
+
     # Test director patterns
     print("\n=== Testing Director ===")
     try:
         web_config = director.create_simple_web_server(Environment.STAGING)
         print("✅ Simple web server created via director")
-        
+
     except Exception as e:
         print(f"❌ Director test failed: {e}")

@@ -107,12 +107,12 @@ class Logistics(ABC):
 class RoadLogistics(Logistics):
     def create_transport(self) -> Transport:
         return Truck()
-    
+
 
 class SeaLogistics(Logistics):
     def create_transport(self) -> Transport:
         return Ship()
-    
+
 
 # Client Code
 def client_code(logistics: Logistics) -> None:

@@ -23,7 +23,9 @@ class SingletonMeta(type):
 
 # --- LogBus Singleton ---
 class LogBus(metaclass=SingletonMeta):
-    def __init__(self, path: str = "app.log", maxsize: int = 1000, policy: str = "drop_new") -> None:
+    def __init__(
+        self, path: str = "app.log", maxsize: int = 1000, policy: str = "drop_new"
+    ) -> None:
         """
         :param path: Path to the log file
         :param maxsize: Max queue size before applying backpressure policy
@@ -119,14 +121,11 @@ LOG_PATH = "test.log"
 accepted_count = 0
 accepted_lock = threading.Lock()
 
+
 def producer(thread_id: int):
     global accepted_count
     for i in range(EVENTS_PER_THREAD):
-        event = {
-            "thread": thread_id,
-            "seq": i,
-            "timestamp": time.time()
-        }
+        event = {"thread": thread_id, "seq": i, "timestamp": time.time()}
         before = time.time()
         result = logbus.emit(event)
         after = time.time()
@@ -139,6 +138,7 @@ def producer(thread_id: int):
 
         if POLICY == "block" and (after - before) > 0.05:
             print(f"[Thread {thread_id}] emit() blocked for {after - before:.3f}s")
+
 
 def parse_and_verify_log(path: str):
     """Parse the log file and verify JSON integrity, uniqueness, and ordering."""
@@ -177,7 +177,9 @@ def parse_and_verify_log(path: str):
     # Optional: Check ordering by timestamp
     timestamps = [e["timestamp"] for e in events]
     if timestamps != sorted(timestamps):
-        print("⚠️ Warning: Events are not strictly in timestamp order (may be expected with concurrency).")
+        print(
+            "⚠️ Warning: Events are not strictly in timestamp order (may be expected with concurrency)."
+        )
     else:
         print("✅ Events are in non-decreasing timestamp order.")
 
@@ -189,7 +191,9 @@ if __name__ == "__main__":
 
     logbus = LogBus(path=LOG_PATH, maxsize=100, policy=POLICY)
 
-    threads = [threading.Thread(target=producer, args=(tid,)) for tid in range(NUM_THREADS)]
+    threads = [
+        threading.Thread(target=producer, args=(tid,)) for tid in range(NUM_THREADS)
+    ]
 
     start_time = time.time()
     for t in threads:

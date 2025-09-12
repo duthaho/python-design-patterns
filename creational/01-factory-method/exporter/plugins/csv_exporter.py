@@ -10,4 +10,3 @@ class CSVExporter(DataExporter):
 
 def register_exporters(registry: RegistryExporterCreator) -> None:
     registry.register_exporter("csv", CSVExporter)
-    

@@ -46,10 +46,10 @@ class Queue(ABC):
 class CloudFactory(ABC):
     @abstractmethod
     def create_compute(self) -> Compute: ...
-    
+
     @abstractmethod
     def create_storage(self) -> Storage: ...
-    
+
     @abstractmethod
     def create_queue(self) -> Queue: ...
 
@@ -71,18 +71,10 @@ class AWSCompute(Compute):
         self.instances[name]["status"] = ResourceStatus.AVAILABLE
 
     def get_instance_info(self) -> Dict:
-        return dict(
-            provider=CloudProvider.AWS,
-            service="EC2",
-            instances=self.instances
-        )
-    
+        return dict(provider=CloudProvider.AWS, service="EC2", instances=self.instances)
+
     def get_estimated_cost_per_hour(self, size: str) -> float:
-        pricing = {
-            "t2.micro": 0.0116,
-            "t2.small": 0.023,
-            "t2.medium": 0.0464
-        }
+        pricing = {"t2.micro": 0.0116, "t2.small": 0.023, "t2.medium": 0.0464}
         return pricing.get(size, 0.05)
 
 
@@ -94,11 +86,7 @@ class AWSStorage(Storage):
         print(f"AWS: Creating S3 bucket '{name}' with versioning={versioning}")
 
     def get_bucket_info(self) -> Dict:
-        return dict(
-            provider=CloudProvider.AWS,
-            service="S3",
-            buckets=self.buckets
-        )
+        return dict(provider=CloudProvider.AWS, service="S3", buckets=self.buckets)
 
 
 class AWSQueue(Queue):
@@ -109,11 +97,7 @@ class AWSQueue(Queue):
         print(f"AWS: Creating SQS queue '{name}' with fifo={fifo}")
 
     def get_queue_info(self) -> Dict:
-        return dict(
-            provider=CloudProvider.AWS,
-            service="SQS",
-            queues=self.queues
-        )
+        return dict(provider=CloudProvider.AWS, service="SQS", queues=self.queues)
 
 
 class AWSFactory(CloudFactory):
@@ -125,13 +109,13 @@ class AWSFactory(CloudFactory):
 
     def create_queue(self) -> Queue:
         return AWSQueue()
-    
+
     def get_provider_name(self) -> str:
         return CloudProvider.AWS
-    
+
     def get_supported_regions(self) -> List[str]:
         return ["us-east-1", "us-west-2", "eu-west-1"]
-    
+
 
 class AzureCompute(Compute):
     def __init__(self):
@@ -145,17 +129,11 @@ class AzureCompute(Compute):
 
     def get_instance_info(self) -> Dict:
         return dict(
-            provider=CloudProvider.AZURE,
-            service="VM",
-            instances=self.instances
+            provider=CloudProvider.AZURE, service="VM", instances=self.instances
         )
-    
+
     def get_estimated_cost_per_hour(self, size: str) -> float:
-        pricing = {
-            "B1s": 0.012,
-            "B2s": 0.04,
-            "D2s_v3": 0.096
-        }
+        pricing = {"B1s": 0.012, "B2s": 0.04, "D2s_v3": 0.096}
         return pricing.get(size, 0.05)
 
 
@@ -164,13 +142,13 @@ class AzureStorage(Storage):
         self.buckets = {}
 
     def create_bucket(self, name: str, versioning: bool) -> None:
-        print(f"Azure: Creating Blob Storage container '{name}' with versioning={versioning}")
+        print(
+            f"Azure: Creating Blob Storage container '{name}' with versioning={versioning}"
+        )
 
     def get_bucket_info(self) -> Dict:
         return dict(
-            provider=CloudProvider.AZURE,
-            service="Blob Storage",
-            buckets=self.buckets
+            provider=CloudProvider.AZURE, service="Blob Storage", buckets=self.buckets
         )
 
 
@@ -184,11 +162,7 @@ class AzureQueue(Queue):
         print(f"Azure: Creating Queue '{name}'")
 
     def get_queue_info(self) -> Dict:
-        return dict(
-            provider=CloudProvider.AZURE,
-            service="Queue",
-            queues=self.queues
-        )
+        return dict(provider=CloudProvider.AZURE, service="Queue", queues=self.queues)
 
 
 class AzureFactory(CloudFactory):
@@ -200,13 +174,13 @@ class AzureFactory(CloudFactory):
 
     def create_queue(self) -> Queue:
         return AzureQueue()
-    
+
     def get_provider_name(self) -> str:
         return CloudProvider.AZURE
-    
+
     def get_supported_regions(self) -> List[str]:
         return ["eastus", "westus2", "northeurope"]
-    
+
 
 class CloudFactoryRegistry:
     factories: Dict[str, CloudFactory] = {
@@ -223,11 +197,11 @@ class CloudFactoryRegistry:
         if provider_name not in cls.list_providers():
             raise ValueError(f"Provider '{provider_name}' is not supported.")
         return cls.factories[provider_name]()
-    
+
     @classmethod
     def list_providers(cls) -> List[str]:
         return list(cls.factories.keys())
-    
+
 
 class Provisioner:
     def __init__(self, factory: CloudFactory):
@@ -248,7 +222,9 @@ class Provisioner:
 
             region = compute_cfg.get("region", "us-east-1")
             if region not in self.factory.get_supported_regions():
-                errors.append(f"Region '{region}' is not supported by {self.factory.get_provider_name()}.")
+                errors.append(
+                    f"Region '{region}' is not supported by {self.factory.get_provider_name()}."
+                )
 
         if "storage" in config:
             storage_cfg = config["storage"]
@@ -263,24 +239,31 @@ class Provisioner:
                 errors.append("Queue must have a valid name.")
             if "fifo" not in queue_cfg:
                 errors.append("Queue must specify fifo (True/False).")
-            elif queue_cfg["fifo"] and self.factory.get_provider_name() == CloudProvider.AZURE:
+            elif (
+                queue_cfg["fifo"]
+                and self.factory.get_provider_name() == CloudProvider.AZURE
+            ):
                 errors.append("Azure Queue does not support FIFO queues.")
 
         return errors
-    
+
     def _provision_compute(self, cfg: Dict) -> None:
         compute = self.factory.create_compute()
         compute.create_instance(cfg["name"], cfg["size"])
         self.created_resources["compute"] = compute.get_instance_info()
         cost = compute.get_estimated_cost_per_hour(cfg["size"])
         self.total_estimated_cost += cost
-        self.audit.append(f"Provisioned Compute: {cfg['name']} (Size: {cfg['size']}, Est. Cost/hr: ${cost:.4f})")
+        self.audit.append(
+            f"Provisioned Compute: {cfg['name']} (Size: {cfg['size']}, Est. Cost/hr: ${cost:.4f})"
+        )
 
     def _provision_storage(self, cfg: Dict) -> None:
         storage = self.factory.create_storage()
         storage.create_bucket(cfg["name"], cfg["versioning"])
         self.created_resources["storage"] = storage.get_bucket_info()
-        self.audit.append(f"Provisioned Storage: {cfg['name']} (Versioning: {cfg['versioning']})")
+        self.audit.append(
+            f"Provisioned Storage: {cfg['name']} (Versioning: {cfg['versioning']})"
+        )
 
     def _provision_queue(self, cfg: Dict) -> None:
         queue = self.factory.create_queue()
@@ -302,9 +285,9 @@ class Provisioner:
             return {
                 "status": "failed",
                 "errors": validation_errors,
-                "audit": self.audit
+                "audit": self.audit,
             }
-        
+
         try:
             if "compute" in config:
                 self._provision_compute(config["compute"])
@@ -317,18 +300,13 @@ class Provisioner:
                 "status": "success",
                 "created_resources": self.created_resources,
                 "total_estimated_monthly_cost": self.total_estimated_cost * 24 * 30,
-                "audit": self.audit
+                "audit": self.audit,
             }
         except Exception as e:
             self.cleanup()
             self.audit.append(f"Provisioning failed: {str(e)}")
 
-            return {
-                "status": "failed",
-                "errors": [str(e)],
-                "audit": self.audit
-            }
-
+            return {"status": "failed", "errors": [str(e)], "audit": self.audit}
 
 
 def demo_provisioning():
@@ -342,25 +320,33 @@ def demo_provisioning():
 
     deployment_config = {
         CloudProvider.AWS: {
-            "compute": {"name": "aws-web-server", "size": "t2.micro", "region": "us-east-1"},
+            "compute": {
+                "name": "aws-web-server",
+                "size": "t2.micro",
+                "region": "us-east-1",
+            },
             "storage": {"name": "aws-app-bucket", "versioning": True},
-            "queue": {"name": "aws-task-queue", "fifo": False}
+            "queue": {"name": "aws-task-queue", "fifo": False},
         },
         CloudProvider.AZURE: {
             "compute": {"name": "azure-web-server", "size": "B1s", "region": "eastus"},
             "storage": {"name": "azure-app-bucket", "versioning": False},
-            "queue": {"name": "azure-task-queue", "fifo": False}
-        }
+            "queue": {"name": "azure-task-queue", "fifo": False},
+        },
     }
 
     for provider, config in deployment_config.items():
         print(f"\nProvisioning resources on {provider}...")
-        provisioner = aws_provisioner if provider == CloudProvider.AWS else azure_provisioner
+        provisioner = (
+            aws_provisioner if provider == CloudProvider.AWS else azure_provisioner
+        )
         result = provisioner.provision(config)
         if result["status"] == "success":
             print("Provisioning succeeded.")
             print("Created Resources:", result["created_resources"])
-            print(f"Estimated Monthly Cost: ${result['total_estimated_monthly_cost']:.2f}")
+            print(
+                f"Estimated Monthly Cost: ${result['total_estimated_monthly_cost']:.2f}"
+            )
         else:
             print("Provisioning failed with errors:", result.get("errors", []))
         print("Audit Log:")

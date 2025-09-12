@@ -20,7 +20,14 @@ class Prototype(ABC):
 
 
 class RequestContext(Prototype):
-    def __init__(self, headers: Dict[str, str], retry_policy: RetryPolicy, timeout_ms: int, trace: Dict[str, Any], session: Optional[object] = None):
+    def __init__(
+        self,
+        headers: Dict[str, str],
+        retry_policy: RetryPolicy,
+        timeout_ms: int,
+        trace: Dict[str, Any],
+        session: Optional[object] = None,
+    ):
         self.headers = headers
         self.retry_policy = retry_policy
         self.timeout_ms = timeout_ms
@@ -39,7 +46,7 @@ class RequestContext(Prototype):
             retry_policy=self.retry_policy,
             timeout_ms=self.timeout_ms,
             trace=cloned_trace,
-            session=None
+            session=None,
         )
 
     def describe(self):
@@ -65,12 +72,12 @@ class ContextBlueprints:
                 raise KeyError(f"Service '{service}' is not registered.")
             prototype = self._reg[service]
             cloned = prototype.clone()
-            if 'headers' in overrides:
+            if "headers" in overrides:
                 # Merge headers, ensuring keys are lowercased
-                new_headers = {k.lower(): v for k, v in overrides['headers'].items()}
+                new_headers = {k.lower(): v for k, v in overrides["headers"].items()}
                 cloned.headers.update(new_headers)
-            if 'timeout_ms' in overrides:
-                timeout = overrides['timeout_ms']
+            if "timeout_ms" in overrides:
+                timeout = overrides["timeout_ms"]
                 if not (100 <= timeout <= 10000):
                     raise ValueError("timeout_ms must be between 100 and 10000 ms.")
                 cloned.timeout_ms = timeout
@@ -79,7 +86,7 @@ class ContextBlueprints:
     def list_services(self) -> tuple[str, ...]:
         with self._lock:
             return tuple(self._reg.keys())
-        
+
 
 # Integration test skeleton
 def simulate_concurrency():
@@ -108,9 +115,16 @@ def simulate_concurrency():
         with lock:
             results.append((service, ctx.trace["span_id"], ctx.headers))
 
-    threads = [threading.Thread(target=worker, args=("payments" if i % 2 == 0 else "search", i)) for i in range(100)]
-    for t in threads: t.start()
-    for t in threads: t.join()
+    threads = [
+        threading.Thread(
+            target=worker, args=("payments" if i % 2 == 0 else "search", i)
+        )
+        for i in range(100)
+    ]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
 
     assert len(results) == 100
 
@@ -121,11 +135,13 @@ def simulate_concurrency():
     assert len(payments_spans) == 50
     assert len(search_spans) == 50
 
-    payments_header_ids = {id(hdr_id) for svc, span, hdr_id in results if svc == "payments"}
+    payments_header_ids = {
+        id(hdr_id) for svc, span, hdr_id in results if svc == "payments"
+    }
     search_header_ids = {id(hdr_id) for svc, span, hdr_id in results if svc == "search"}
     assert len(payments_header_ids) == 50
     assert len(search_header_ids) == 50
-    
+
     print("All tests passed.")
 
 

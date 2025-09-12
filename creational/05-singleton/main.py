@@ -72,7 +72,7 @@ class SingletonMeta(type):
                 if cls._instance is None:
                     cls._instance = super().__call__(*args, **kwargs)
         return cls._instance
-    
+
 
 class Logger(metaclass=SingletonMeta):
     def log(self, message: str) -> None:
@@ -90,7 +90,7 @@ class Singleton:
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
         return cls._instance
-    
+
 
 class Logger(Singleton):
     def log(self, message: str) -> None:
@@ -108,7 +108,7 @@ def singleton(cls):
                 if cls not in instances:
                     instances[cls] = cls(*args, **kwargs)
         return instances[cls]
-    
+
     return get_instance
 
 
@@ -136,4 +136,7 @@ if __name__ == "__main__":
 
     # Verify that all instances are the same
     print("\nVerifying singleton instances:")
-    print("All logger instances are the same:", all(Logger() is Logger() for _ in range(5)))
+    print(
+        "All logger instances are the same:",
+        all(Logger() is Logger() for _ in range(5)),
+    )

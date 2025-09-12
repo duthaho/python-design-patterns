@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class QueueType(Enum):
     """Enumeration of supported queue types."""
+
     RABBITMQ = "rabbitmq"
     KAFKA = "kafka"
     AWS_SQS = "aws_sqs"
@@ -28,6 +29,7 @@ class QueueType(Enum):
 @dataclass
 class QueueConfig:
     """Configuration object for message queues with validation."""
+
     queue_type: str
     host: str
     port: int
@@ -50,7 +52,9 @@ class QueueConfig:
         if not self.host:
             errors.append("Host cannot be empty.")
         if self.queue_type not in QueueType.to_list():
-            errors.append(f"Unsupported queue type: {self.queue_type}. Supported types: {QueueType.to_list()}")
+            errors.append(
+                f"Unsupported queue type: {self.queue_type}. Supported types: {QueueType.to_list()}"
+            )
         if errors:
             raise ConfigurationError("Invalid QueueConfig: " + "; ".join(errors))
 
@@ -64,7 +68,7 @@ class QueueConfig:
             "host": self.host,
             "port": self.port,
             "username": self.username,
-            "ssl_enabled": self.ssl_enabled
+            "ssl_enabled": self.ssl_enabled,
         }
         key_string = json.dumps(key_data, sort_keys=True)
         return hashlib.sha256(key_string.encode()).hexdigest()
@@ -72,17 +76,19 @@ class QueueConfig:
 
 class ConnectionError(Exception):
     """Custom exception for connection failures."""
+
     pass
 
 
 class ConfigurationError(Exception):
     """Custom exception for configuration issues."""
+
     pass
 
 
 class MessageQueue(ABC):
     """Abstract base class for all message queue implementations."""
-    
+
     def __init__(self, config: QueueConfig):
         self.config = config
         self._connected = False
@@ -125,20 +131,22 @@ class MessageQueue(ABC):
             "host": self.config.host,
             "port": self.config.port,
             "connected": self._connected,
-            "ssl_enabled": self.config.ssl_enabled
+            "ssl_enabled": self.config.ssl_enabled,
         }
 
 
 class RabbitMQQueue(MessageQueue):
     """RabbitMQ implementation."""
-    
+
     def connect(self) -> None:
         # TODO: Implement RabbitMQ connection logic
         # - Log connection attempt
         # - Simulate connection (print connection details)
         # - Set _connected = True on success
         # - Handle connection failures with retries
-        logger.info(f"Connecting to RabbitMQ at {self.config.host}:{self.config.port} with user {self.config.username}")
+        logger.info(
+            f"Connecting to RabbitMQ at {self.config.host}:{self.config.port} with user {self.config.username}"
+        )
         while self._connection_attempts < self.max_retries:
             self._connection_attempts += 1
             if random.choice([True, False]):  # Simulate random success/failure
@@ -180,12 +188,14 @@ class RabbitMQQueue(MessageQueue):
         # TODO: Implement health check
         # - Check connection status
         # - Maybe simulate a ping operation
-        return self._connected and random.choice([True, False])  # Simulate occasional failure
+        return self._connected and random.choice(
+            [True, False]
+        )  # Simulate occasional failure
 
 
 class KafkaQueue(MessageQueue):
     """Kafka implementation."""
-    
+
     def connect(self) -> None:
         # TODO: Similar to RabbitMQ but with Kafka-specific logic
         pass
@@ -209,7 +219,7 @@ class KafkaQueue(MessageQueue):
 
 class AWSQueueSQS(MessageQueue):
     """AWS SQS implementation."""
-    
+
     def connect(self) -> None:
         # TODO: Implement AWS SQS connection
         pass
@@ -233,7 +243,7 @@ class AWSQueueSQS(MessageQueue):
 
 class RedisQueue(MessageQueue):
     """Redis implementation."""
-    
+
     def connect(self) -> None:
         # TODO: Implement Redis connection
         pass
@@ -257,7 +267,7 @@ class RedisQueue(MessageQueue):
 
 class MessageQueueFactory:
     """Advanced factory with connection pooling and health monitoring."""
-    
+
     def __init__(self):
         self._pool: Dict[str, MessageQueue] = {}
         self._registry: Dict[str, Type[MessageQueue]] = {}
@@ -283,7 +293,9 @@ class MessageQueueFactory:
         if not issubclass(queue_class, MessageQueue):
             raise ValueError(f"{queue_class} is not a subclass of MessageQueue")
         self._registry[queue_type] = queue_class
-        logger.info(f"Registered queue type '{queue_type}' with class {queue_class.__name__}")
+        logger.info(
+            f"Registered queue type '{queue_type}' with class {queue_class.__name__}"
+        )
 
     def create_queue(self, config: QueueConfig) -> MessageQueue:
         """Create or retrieve queue from pool."""
@@ -295,7 +307,9 @@ class MessageQueueFactory:
         # - Update health status
         # - Return queue instance
         if config.queue_type not in self._registry:
-            raise ConfigurationError(f"Queue type '{config.queue_type}' is not registered.")
+            raise ConfigurationError(
+                f"Queue type '{config.queue_type}' is not registered."
+            )
         key = config.get_connection_key()
         if key in self._pool:
             logger.info(f"Reusing existing connection for key {key}")
@@ -319,7 +333,9 @@ class MessageQueueFactory:
         # - Check health of all pooled connections
         # - Remove unhealthy ones
         # - Log cleanup actions
-        unhealthy_keys = [key for key, queue in self._pool.items() if not queue.health_check()]
+        unhealthy_keys = [
+            key for key, queue in self._pool.items() if not queue.health_check()
+        ]
         for key in unhealthy_keys:
             logger.warning(f"Removing unhealthy connection for key {key}")
             self._pool[key].disconnect()
@@ -334,8 +350,12 @@ class MessageQueueFactory:
         # - Connection details
         status = {
             "total_connections": len(self._pool),
-            "healthy_connections": sum(1 for healthy in self._health_status.values() if healthy),
-            "connections": {key: queue.get_connection_info() for key, queue in self._pool.items()}
+            "healthy_connections": sum(
+                1 for healthy in self._health_status.values() if healthy
+            ),
+            "connections": {
+                key: queue.get_connection_info() for key, queue in self._pool.items()
+            },
         }
         return status
 
@@ -354,9 +374,9 @@ class MessageQueueFactory:
 
 def main():
     """Demonstration of the enhanced factory pattern."""
-    
+
     # TODO: Implement comprehensive test cases:
-    
+
     # 1. Test configuration builder
     config = QueueConfig(
         queue_type=QueueType.RABBITMQ.value,
@@ -364,23 +384,23 @@ def main():
         port=5672,
         username="guest",
         password="guest",
-        ssl_enabled=False
+        ssl_enabled=False,
     )
-    
+
     # 2. Test factory with pooling
     factory = MessageQueueFactory()
-    
+
     # 3. Test queue creation and operations
     queue = factory.create_queue(config)
-    
+
     # 4. Test health monitoring
     health = factory.get_queue_health(config)
     print(f"Queue health: {health}")
-    
+
     # 5. Test connection pooling (same config should return same instance)
     same_queue = factory.create_queue(config)
     print(f"Same instance: {queue is same_queue}")
-    
+
     # 6. Test error handling
     try:
         bad_config = QueueConfig(
@@ -388,12 +408,12 @@ def main():
             host="localhost",
             port=5672,
             username="guest",
-            password="guest"
+            password="guest",
         )
         factory.create_queue(bad_config)
     except ConfigurationError as e:
         print(f"Caught expected configuration error: {e}")
-    
+
     # 7. Test sending and receiving messages
     if queue.is_connected():
         sent = queue.send_message("Hello, World!", "test_queue")
@@ -410,7 +430,7 @@ def main():
 
     # 10. Shutdown factory
     factory.shutdown()
-    
+
     print("All tests completed!")
 
 

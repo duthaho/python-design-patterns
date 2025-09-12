@@ -16,10 +16,11 @@ from dataclasses import dataclass
 # PART 1: PROBLEMATIC SINGLETON (Anti-pattern Example)
 # ====================
 
+
 class ProblematicLogger:
     """
     A poorly designed singleton that demonstrates common anti-patterns
-    
+
     PROBLEMS IDENTIFIED:
     1. Resource Leak: File handle never properly closed in destructor
     2. Thread Safety Issues: File operations not thread-safe
@@ -31,9 +32,10 @@ class ProblematicLogger:
     8. Error Handling: No exception handling for file operations
     9. Configuration Issues: Log level and file path hard-coded
     """
+
     _instance = None
     _lock = threading.Lock()
-    
+
     def __new__(cls):
         if cls._instance is None:
             with cls._lock:
@@ -41,20 +43,20 @@ class ProblematicLogger:
                     cls._instance = super().__new__(cls)
                     cls._instance._initialized = False
         return cls._instance
-    
+
     def __init__(self):
         if not self._initialized:
             self.log_file = "app.log"
             self.log_level = "INFO"
             self.file_handle = open(self.log_file, "a")
             self._initialized = True
-    
+
     def log(self, message: str, level: str = "INFO"):
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
         log_entry = f"[{timestamp}] {level}: {message}\n"
         self.file_handle.write(log_entry)
         self.file_handle.flush()
-    
+
     def change_log_file(self, new_file: str):
         self.file_handle.close()
         self.log_file = new_file
@@ -68,12 +70,14 @@ class ProblematicLogger:
 # PART 2: DEPENDENCY INJECTION ALTERNATIVE
 # ====================
 
+
 class LoggerInterface(Protocol):
     """
     TODO: Define the logger interface using Protocol
     - Define method signatures that any logger should implement
     - Think about what methods a logger needs
     """
+
     def log(self, message: str, level: str = "INFO") -> None: ...
 
     def close(self) -> None: ...
@@ -86,6 +90,7 @@ class FileLogger(LoggerInterface):
     - Should be easily testable and configurable
     - Should handle file operations safely
     """
+
     def __init__(self, log_file: str, log_level: str = "INFO"):
         # TODO: Initialize the file logger
         self.log_file = log_file
@@ -97,7 +102,7 @@ class FileLogger(LoggerInterface):
             self.file_handle = open(self.log_file, "a")
         except Exception as e:
             raise IOError(f"Failed to open log file {self.log_file}: {e}")
-    
+
     def log(self, message: str, level: str = "INFO"):
         # TODO: Implement logging to file
         if self.file_handle and not self.file_handle.closed:
@@ -109,7 +114,7 @@ class FileLogger(LoggerInterface):
                     self.file_handle.flush()
                 except Exception as e:
                     raise IOError(f"Failed to write to log file {self.log_file}: {e}")
-    
+
     def close(self):
         # TODO: Safely close file handles
         if self.file_handle and not self.file_handle.closed:
@@ -123,16 +128,17 @@ class ConsoleLogger(LoggerInterface):
     - Should implement LoggerInterface
     - Should be useful for development/testing
     """
+
     def __init__(self, log_level: str = "INFO"):
         # TODO: Initialize console logger
         self.log_level = log_level
         self.lock = threading.Lock()
-    
+
     def log(self, message: str, level: str = "INFO"):
         # TODO: Implement logging to console
         with self.lock:
             print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {level}: {message}")
-    
+
     def close(self):
         # TODO: No-op for console logger
         pass
@@ -140,6 +146,7 @@ class ConsoleLogger(LoggerInterface):
 
 class DatabaseLogger(LoggerInterface):
     """Logger that writes logs to a database (simulated)"""
+
     def __init__(self, connection_string: str, log_level: str = "INFO"):
         self.connection_string = connection_string
         self.log_level = log_level
@@ -151,7 +158,7 @@ class DatabaseLogger(LoggerInterface):
             log_entry = {
                 "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "level": level,
-                "message": message
+                "message": message,
             }
             self.log_entries.append(log_entry)
             # Simulate database write delay
@@ -190,6 +197,7 @@ class AppConfig:
 
 class ConfigurationError(Exception):
     """Custom exception for configuration errors"""
+
     pass
 
 
@@ -199,6 +207,7 @@ class ConfigurationManager:
     - Validate configuration
     - Provide configuration to other components
     """
+
     def __init__(self, config_source: Optional[str] = None):
         self.config_source = config_source
         self.config = None
@@ -215,7 +224,7 @@ class ConfigurationManager:
                 debug=data.get("debug", False),
                 logging=logging_config,
                 database=database_config,
-                api_key=data.get("api_key")
+                api_key=data.get("api_key"),
             )
 
             self.validate_config(config)
@@ -229,7 +238,9 @@ class ConfigurationManager:
         if config.logging.type == "file" and not config.logging.file_path:
             raise ConfigurationError("File path must be provided for file logger.")
         if config.logging.type == "database" and not config.logging.database_connection:
-            raise ConfigurationError("Database connection string must be provided for database logger.")
+            raise ConfigurationError(
+                "Database connection string must be provided for database logger."
+            )
         if not config.database.host or not config.database.port:
             raise ConfigurationError("Database host and port must be specified.")
 
@@ -240,10 +251,11 @@ class DatabaseService:
     - Should accept logger via dependency injection
     - Should NOT create its own logger singleton
     """
+
     def __init__(self, logger: LoggerInterface, config: DatabaseConfig):
         self.logger = logger
         self.config = config
-    
+
     def save_user(self, user_data: dict) -> bool:
         """
         TODO: Simulate saving user data
@@ -252,7 +264,10 @@ class DatabaseService:
         - Handle exceptions properly
         """
         try:
-            self.logger.log(f"Saving user data: {user_data} to {self.config.host}:{self.config.port}", level="DEBUG")
+            self.logger.log(
+                f"Saving user data: {user_data} to {self.config.host}:{self.config.port}",
+                level="DEBUG",
+            )
             # Simulate saving to database
             time.sleep(0.1)  # Simulate delay
             self.logger.log("User data saved successfully.", level="INFO")
@@ -260,7 +275,7 @@ class DatabaseService:
         except Exception as e:
             self.logger.log(f"Error saving user data: {e}", level="ERROR")
             return False
-    
+
     def get_user(self, user_id: int) -> Optional[dict]:
         """
         TODO: Simulate getting user data
@@ -268,7 +283,10 @@ class DatabaseService:
         - Return user data or None
         """
         try:
-            self.logger.log(f"Fetching user data for user_id: {user_id} from {self.config.host}:{self.config.port}", level="DEBUG")
+            self.logger.log(
+                f"Fetching user data for user_id: {user_id} from {self.config.host}:{self.config.port}",
+                level="DEBUG",
+            )
             # Simulate fetching from database
             time.sleep(0.1)  # Simulate delay
             user_data = {"id": user_id, "name": "John Doe"}  # Dummy data
@@ -283,8 +301,10 @@ class DatabaseService:
 # PART 3: DEPENDENCY INJECTION CONTAINER
 # ====================
 
+
 class DIError(Exception):
     """Custom exception for DI container errors"""
+
     pass
 
 
@@ -295,11 +315,14 @@ class DIContainer:
     - Should resolve dependencies automatically
     - Should support singleton and transient lifetimes
     """
+
     def __init__(self):
-        self._services = {} # interface_type -> (implementation_type, args, kwargs, is_singleton)
-        self._singletons = {} # interface_type -> instance
+        self._services = (
+            {}
+        )  # interface_type -> (implementation_type, args, kwargs, is_singleton)
+        self._singletons = {}  # interface_type -> instance
         self._lock = threading.Lock()
-    
+
     def register_singleton(self, interface_type, implementation_type, *args, **kwargs):
         """
         TODO: Register a service as singleton
@@ -309,7 +332,7 @@ class DIContainer:
         with self._lock:
             self._services[interface_type] = (implementation_type, args, kwargs, True)
             self._singletons[interface_type] = None
-    
+
     def register_transient(self, interface_type, implementation_type, *args, **kwargs):
         """
         TODO: Register a service as transient (new instance each time)
@@ -325,7 +348,7 @@ class DIContainer:
         with self._lock:
             self._services[interface_type] = (lambda: instance, (), {}, True)
             self._singletons[interface_type] = instance
-    
+
     def resolve(self, interface_type):
         """
         TODO: Resolve a service from the container
@@ -335,28 +358,36 @@ class DIContainer:
         """
         if interface_type not in self._services:
             raise DIError(f"Service {interface_type} not registered.")
-        
+
         implementation_type, args, kwargs, is_singleton = self._services[interface_type]
 
         if is_singleton:
             if self._singletons[interface_type] is None:
                 if implementation_type is None:
-                    raise DIError(f"No implementation type for singleton {interface_type}")
-                
+                    raise DIError(
+                        f"No implementation type for singleton {interface_type}"
+                    )
+
                 with self._lock:
                     if self._singletons[interface_type] is None:
                         # Resolve constructor dependencies
-                        resolved_args, resolved_kwargs = self._resolve_dependencies(implementation_type, args, kwargs)
-                        self._singletons[interface_type] = implementation_type(*resolved_args, **resolved_kwargs)
+                        resolved_args, resolved_kwargs = self._resolve_dependencies(
+                            implementation_type, args, kwargs
+                        )
+                        self._singletons[interface_type] = implementation_type(
+                            *resolved_args, **resolved_kwargs
+                        )
             return self._singletons[interface_type]
 
         if implementation_type is None:
             raise DIError(f"No implementation type for transient {interface_type}")
-        
+
         # Resolve constructor dependencies
-        resolved_args, resolved_kwargs = self._resolve_dependencies(implementation_type, args, kwargs)
+        resolved_args, resolved_kwargs = self._resolve_dependencies(
+            implementation_type, args, kwargs
+        )
         return implementation_type(*resolved_args, **resolved_kwargs)
-    
+
     def _resolve_dependencies(self, implementation_type, args, kwargs):
         """Resolve constructor dependencies"""
         resolved_args = list(args)
@@ -365,7 +396,7 @@ class DIContainer:
         # Get constructor signature
         try:
             sig = inspect.signature(implementation_type.__init__)
-            params = list(sig.parameters.values())[1:] if sig else [] # Skip 'self'
+            params = list(sig.parameters.values())[1:] if sig else []  # Skip 'self'
 
             # Resolve dependency for params that have type anotations
             for i, param in enumerate(params):
@@ -383,17 +414,19 @@ class DIContainer:
                     except DIError:
                         # If dependency can't be resolved and no default, raise error
                         if param.default == inspect.Parameter.empty:
-                            raise DIError(f"Cannot resolve dependency for parameter '{param.annotation.__name__}' in {implementation_type.__name__}")
+                            raise DIError(
+                                f"Cannot resolve dependency for parameter '{param.annotation.__name__}' in {implementation_type.__name__}"
+                            )
         except Exception as e:
             # If inspection fails, just return original args/kwargs
             pass
 
         return resolved_args, resolved_kwargs
-        
+
     def is_registered(self, interface_type) -> bool:
         """Check if a service is registered"""
         return interface_type in self._services
-    
+
     def clear(self):
         """Clear all registrations and instances"""
         with self._lock:
@@ -405,6 +438,7 @@ class DIContainer:
 # PART 4: MODERN PATTERNS (Factory + DI)
 # ====================
 
+
 class LoggerFactory:
     """
     TODO: Implement a logger factory
@@ -412,7 +446,7 @@ class LoggerFactory:
     - Support multiple logger types
     - Return logger instances, not singletons
     """
-    
+
     @staticmethod
     def create_logger(config: LoggingConfig) -> LoggerInterface:
         """
@@ -428,7 +462,9 @@ class LoggerFactory:
             return ConsoleLogger(config.level)
         elif config.type == "database":
             if not config.database_connection:
-                raise ConfigurationError("Database connection string must be provided for database logger.")
+                raise ConfigurationError(
+                    "Database connection string must be provided for database logger."
+                )
             return DatabaseLogger(config.database_connection, config.level)
         raise ConfigurationError(f"Unknown logger type: {config.type}")
 
@@ -439,13 +475,13 @@ class ApplicationBootstrap:
     - Replace singleton pattern with proper DI
     - Show how to structure application startup
     """
-    
+
     def __init__(self, config_path: str):
         self.config_path = config_path
         self.config_manager = ConfigurationManager(config_path)
         self.container = DIContainer()
         self.app_config = None
-    
+
     def setup_container(self) -> DIContainer:
         """
         TODO: Configure the DI container
@@ -455,7 +491,7 @@ class ApplicationBootstrap:
         """
         # Load configuration first
         self.app_config = self.config_manager.load_config()
-        
+
         # Register config as singleton instance
         self.container.register_instance(AppConfig, self.app_config)
         self.container.register_instance(DatabaseConfig, self.app_config.database)
@@ -471,8 +507,8 @@ class ApplicationBootstrap:
         self.container.register_singleton(LoggerFactory, LoggerFactory)
 
         return self.container
-    
-    def create_application(self) -> 'Application':
+
+    def create_application(self) -> "Application":
         """Create the main application instance with dependencies injected"""
         if self.app_config is None:
             self.setup_container()
@@ -483,22 +519,30 @@ class ApplicationBootstrap:
         config = self.container.resolve(AppConfig)
 
         return Application(logger, database_service, config, self.container)
-    
+
     def shutdown(self):
         """Properly shutdown the application and its services"""
         logger = self.container.resolve(LoggerInterface)
         logger.close()
         # Close other services if needed
 
+
 class Application:
     """Main application class that uses DI"""
-    def __init__(self, logger: LoggerInterface, database_service: DatabaseService, config: AppConfig, container: DIContainer):
+
+    def __init__(
+        self,
+        logger: LoggerInterface,
+        database_service: DatabaseService,
+        config: AppConfig,
+        container: DIContainer,
+    ):
         self.logger = logger
         self.database_service = database_service
         self.config = config
         self.container = container
         self.running = False
-    
+
     def start(self):
         self.running = True
         self.logger.log("Application started.", level="INFO")
@@ -525,6 +569,7 @@ class Application:
 # PART 5: MAIN EXECUTION & DEMONSTRATIONS
 # ====================
 
+
 def demonstrate_singleton_problems():
     """
     Demonstrate problems with singleton pattern
@@ -533,27 +578,28 @@ def demonstrate_singleton_problems():
     - Show tight coupling
     """
     print("\n=== DEMONSTRATING SINGLETON PROBLEMS ===")
-    
+
     print("\n1. Hidden Dependencies:")
+
     # This class looks like it has no dependencies, but it does!
     class UserService:
         def create_user(self, name: str):
             logger = ProblematicLogger()  # Hidden dependency!
             logger.log(f"Creating user: {name}")
             return {"id": 1, "name": name}
-    
+
     # You can't tell from the constructor that UserService needs logging
     service = UserService()
     print("UserService created - but what does it depend on? 🤔")
-    
+
     print("\n2. Global State Problems:")
     logger1 = ProblematicLogger()
     logger2 = ProblematicLogger()
     print(f"Same instance? {logger1 is logger2}")
-    
+
     logger1.change_log_file("test1.log")
     print(f"Logger2 file changed too: {logger2.log_file}")
-    
+
     print("\n3. Testing Nightmare:")
     print("Every test that uses ProblematicLogger writes to real files!")
     print("Tests can't run in parallel safely!")
@@ -568,37 +614,39 @@ def demonstrate_di_solution():
     - Show loose coupling
     """
     print("\n=== DEMONSTRATING DEPENDENCY INJECTION SOLUTION ===")
-    
+
     print("\n1. Explicit Dependencies:")
     # Clear what this service needs!
     console_logger = ConsoleLogger("DEBUG")
     file_logger = FileLogger("app.log", "INFO")
-    database_config = DatabaseConfig(host="localhost", port=5432, username="user", password="pass", database="appdb")
-    
+    database_config = DatabaseConfig(
+        host="localhost", port=5432, username="user", password="pass", database="appdb"
+    )
+
     # Dependencies are explicit and visible
     service1 = DatabaseService(console_logger, database_config)
     service2 = DatabaseService(file_logger, database_config)
-    
+
     print("Dependencies are clear and explicit! ✅")
-    
+
     print("\n2. Easy Testing:")
     # Create a mock logger for testing
     mock_logger = Mock(spec=LoggerInterface)
     test_service = DatabaseService(mock_logger, database_config)
-    
+
     test_service.save_user({"name": "Test User"})
     print("Mock logger calls:", mock_logger.log.call_count)
-    
+
     print("\n3. Flexible Configuration:")
     container = DIContainer()
     container.register_singleton(LoggerInterface, ConsoleLogger, "DEBUG")
     container.register_instance(DatabaseConfig, database_config)
     container.register_transient(DatabaseService, DatabaseService)
-    
+
     # Automatic dependency injection!
     service = container.resolve(DatabaseService)
     service.save_user({"name": "DI User"})
-    
+
     # Clean up
     console_logger.close()
     file_logger.close()
@@ -608,30 +656,32 @@ def demonstrate_factory_pattern():
     """Demonstrate the logger factory pattern"""
     print("\n🏭 FACTORY PATTERN DEMONSTRATION")
     print("=" * 60)
-    
+
     # Create different logger configurations
     console_config = LoggingConfig(level="DEBUG", type="console")
     file_config = LoggingConfig(level="INFO", type="file", file_path="app.log")
-    db_config = LoggingConfig(level="ERROR", type="database", database_connection="sqlite://logs.db")
-    
+    db_config = LoggingConfig(
+        level="ERROR", type="database", database_connection="sqlite://logs.db"
+    )
+
     # Create loggers using factory
     console_logger = LoggerFactory.create_logger(console_config)
     file_logger = LoggerFactory.create_logger(file_config)
     db_logger = LoggerFactory.create_logger(db_config)
-    
+
     # Demonstrate usage
     test_message = "Factory pattern demonstration"
-    
+
     print("Creating loggers via factory...")
     console_logger.log(test_message, "INFO")
     file_logger.log(test_message, "INFO")
     db_logger.log(test_message, "ERROR")
-    
+
     # Clean up
     console_logger.close()
     file_logger.close()
     db_logger.close()
-    
+
     print("✅ Factory pattern allows flexible logger creation!")
 
 
@@ -639,60 +689,57 @@ def demonstrate_application_bootstrap():
     """Demonstrate proper application bootstrapping with DI"""
     print("\n🚀 APPLICATION BOOTSTRAP DEMONSTRATION")
     print("=" * 60)
-    
+
     # Create sample configuration
     sample_config = {
         "debug": True,
         "api_key": "demo-key-123",
-        "logging": {
-            "level": "DEBUG",
-            "type": "console"
-        },
+        "logging": {"level": "DEBUG", "type": "console"},
         "database": {
             "host": "localhost",
             "port": 5432,
             "database": "demo_app",
             "username": "demo_user",
             "password": "demo_pass",
-            "max_connections": 15
-        }
+            "max_connections": 15,
+        },
     }
-    
+
     # Write config to temporary file
     config_file = "demo_config.json"
     try:
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             json.dump(sample_config, f, indent=2)
-        
+
         # Bootstrap the application
         print("1. Bootstrapping application...")
         bootstrap = ApplicationBootstrap(config_file)
-        
+
         print("2. Setting up DI container...")
         container = bootstrap.setup_container()
-        
+
         print("3. Creating application...")
         app = bootstrap.create_application()
-        
+
         print("4. Starting application...")
         app.start()
-        
+
         print("5. Processing sample users...")
         sample_users = [
             {"name": "Alice", "email": "alice@example.com"},
             {"name": "Bob", "email": "bob@example.com"},
-            {"name": "Charlie", "email": "charlie@example.com"}
+            {"name": "Charlie", "email": "charlie@example.com"},
         ]
         app.process_users(sample_users)
-        
+
         print("6. Stopping application...")
         app.stop()
-        
+
         print("7. Cleaning up...")
         bootstrap.shutdown()
-        
+
         print("✅ Application lifecycle complete!")
-        
+
     finally:
         # Clean up
         if os.path.exists(config_file):
@@ -704,10 +751,9 @@ def demonstrate_application_bootstrap():
 if __name__ == "__main__":
     print("Singleton Anti-patterns and Alternatives")
     print("=" * 60)
-    
+
     # TODO: Add your demonstration calls here
     demonstrate_singleton_problems()
     demonstrate_di_solution()
     demonstrate_factory_pattern()
     demonstrate_application_bootstrap()
-    
