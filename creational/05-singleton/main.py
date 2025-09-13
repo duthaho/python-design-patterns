@@ -58,7 +58,8 @@ Real-world use cases:
 
 # Link: https://refactoring.guru/design-patterns/singleton
 
-import threading, time
+import threading
+import time
 
 
 # Using a metaclass to implement Singleton pattern

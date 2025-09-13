@@ -76,7 +76,6 @@ g., console logger, file logger, remote logger) based on the logging configurati
 
 # Link: https://refactoring.guru/design-patterns/abstract-factory
 
-from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List
 

@@ -60,11 +60,10 @@ Real-world use cases:
 
 # Link: https://refactoring.guru/design-patterns/prototype
 
-
-from abc import ABC, abstractmethod
 import copy
-from typing import Self
 import uuid
+from abc import ABC, abstractmethod
+from typing import Self
 
 
 class Style:

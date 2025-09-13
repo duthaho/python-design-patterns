@@ -1,12 +1,11 @@
-import threading
-import time
 import inspect
-from unittest.mock import Mock
-from typing import Protocol, Optional
 import json
 import os
+import threading
+import time
 from dataclasses import dataclass
-
+from typing import Optional, Protocol
+from unittest.mock import Mock
 
 # ====================
 # SINGLETON ANTI-PATTERNS AND ALTERNATIVES

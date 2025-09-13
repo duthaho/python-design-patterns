@@ -92,7 +92,6 @@ Real-world use cases:
 
 # Link: https://refactoring.guru/design-patterns/builder
 
-
 from abc import ABC, abstractmethod
 from typing import List
 

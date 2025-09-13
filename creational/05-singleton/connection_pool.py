@@ -1,9 +1,8 @@
+import random
 import threading
 import time
-import random
-from typing import Optional, List
 from enum import Enum
-
+from typing import List, Optional
 
 # ====================
 # HELPER FUNCTIONS (Implement these too!)

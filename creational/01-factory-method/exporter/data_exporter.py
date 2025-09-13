@@ -1,7 +1,6 @@
+import importlib
 from abc import ABC, abstractmethod
 from typing import Dict, Type
-
-import importlib
 
 
 class DataExporter(ABC):
