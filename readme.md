@@ -69,8 +69,23 @@ Creational patterns deal with object creation mechanisms, trying to create objec
 ### Structural Patterns
 Structural patterns focus on the composition of classes and objects. Examples include:
 - Adapter
+    | Exercise              | Code                                                                                                |
+    |-----------------------|-----------------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./structural/01-adapter/main.py)                                                          |
+    | Data Processing       | [data_processing.py](./structural/01-adapter/data_processing.py)                                    |
 - Bridge
+    | Exercise              | Code                                                                                                |
+    |-----------------------|-----------------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./structural/02-bridge/main.py)                                                           |
+    | Payment Gateway       | [payment_gateway.py](./structural/02-bridge/payment_gateway.py)                                     |
+    | Notification Sender   | [notification_sender.py](./structural/02-bridge/notification_sender.py)                             |
+    | Database Provider     | [database_provider.py](./structural/02-bridge/exporter/database_provider.py)                        |
 - Composite
+    | Exercise              | Code                                                                                                |
+    |-----------------------|-----------------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./structural/03-composite/main.py)                                                        |
+    | Math Expression       | [mathematical_expression.py](./structural/03-composite/mathematical_expression.py)                  |
+    | Task Management       | [task_management.py](./structural/03-composite/task_management.py)                                  |
 - Decorator
 - Facade
 - Flyweight
