@@ -87,6 +87,13 @@ Structural patterns focus on the composition of classes and objects. Examples in
     | Math Expression       | [mathematical_expression.py](./structural/03-composite/mathematical_expression.py)                  |
     | Task Management       | [task_management.py](./structural/03-composite/task_management.py)                                  |
 - Decorator
+    | Exercise              | Code                                                                                                |
+    |-----------------------|-----------------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./structural/04-decorator/main.py)                                                        |
+    | Service Decorator     | [service_decorator.py](./structural/04-decorator/service_decorator.py)                              |
+    | Request Client        | [request_client.py](./structural/04-decorator/request_client.py)                                    |
+    | Payment Processor     | [payment_processor.py](./structural/04-decorator/exporter/payment_processor.py)                     |
+    | Logging System        | [logging_system.py](./structural/04-decorator/exporter/logging_system.py)                           |
 - Facade
 - Flyweight
 - Proxy
