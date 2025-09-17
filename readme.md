@@ -102,6 +102,11 @@ Structural patterns focus on the composition of classes and objects. Examples in
     | Data Store            | [data_store.py](./structural/05-facade/data_store.py)                                      |
     | API Gateway           | [api_gateway.py](./structural/05-facade/api_gateway.py)                                    |
 - Flyweight
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./structural/06-flyweight/main.py)                                               |
+    | Particle System       | [partical_system.py](./structural/06-flyweight/partical_system.py)                         |
+    | Cache Manager         | [cache_manager.py](./structural/06-flyweight/cache_manager.py)                             |
 - Proxy
 
 ### Behavioral Patterns
