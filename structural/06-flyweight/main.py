@@ -34,6 +34,30 @@ a method to get a Flyweight object based on its intrinsic state, creating a new 
 6. Ensure that the Flyweight objects are immutable to prevent unintended side effects when shared.
 7. Optionally, implement a mechanism to manage the lifecycle of Flyweight objects, such as reference
     counting or caching strategies.
+
+Pros and Cons:
++ Reduces memory consumption by sharing common state among multiple objects.
++ Improves performance by minimizing object creation overhead.
++ Promotes a clear separation between intrinsic and extrinsic state.
+- Can introduce complexity in managing shared state and ensuring immutability.
+- May lead to increased complexity in the client code due to the need to manage extrinsic state.
+- Not suitable for all scenarios, especially when objects have a lot of unique state.
+
+Real-world use cases:
+- Text editors often use the Flyweight pattern to manage character formatting, where characters
+    share font and size information.
+- In graphical applications, the Flyweight pattern can be used to manage shapes or icons that share
+    common properties like color or style.
+- In game development, the Flyweight pattern can be used to manage game entities that share common
+    attributes, such as textures or models.
+- In web applications, the Flyweight pattern can be used to manage UI components that share common
+    styles or behaviors.
+- In document processing systems, the Flyweight pattern can be used to manage elements like
+    paragraphs or sections that share formatting attributes.
+- In caching systems, the Flyweight pattern can be used to manage frequently accessed data that can
+    be shared among multiple users or sessions.
+- In network protocols, the Flyweight pattern can be used to manage protocol headers that share
+    common fields across multiple messages.
 """
 
 # Link: https://refactoring.guru/design-patterns/flyweight

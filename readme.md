@@ -108,6 +108,12 @@ Structural patterns focus on the composition of classes and objects. Examples in
     | Particle System       | [partical_system.py](./structural/06-flyweight/partical_system.py)                         |
     | Cache Manager         | [cache_manager.py](./structural/06-flyweight/cache_manager.py)                             |
 - Proxy
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./structural/07-proxy/main.py)                                                   |
+    | Fibonacci Calculator  | [fibonacci_calculator.py](./structural/07-proxy/fibonacci_calculator.py)                   |
+    | Dynamic Proxies       | [dynamic_proxies.py](./structural/07-proxy/dynamic_proxies.py)                             |
+    | Security Proxy        | [security_proxy.py](./structural/07-proxy/security_proxy.py)                               |
 
 ### Behavioral Patterns
 Behavioral patterns are concerned with communication between objects. Examples include:
