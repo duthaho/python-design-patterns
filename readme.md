@@ -118,6 +118,13 @@ Structural patterns focus on the composition of classes and objects. Examples in
 ### Behavioral Patterns
 Behavioral patterns are concerned with communication between objects. Examples include:
 - Chain of Responsibility
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./behavioral/01-chain-of-responsibility/main.py)                                 |
+    | Payment Gateway       | [payment_gateway.py](./behavioral/01-chain-of-responsibility/payment_gateway.py)           |
+    | Chain Builder         | [chain_builder.py](./behavioral/01-chain-of-responsibility/chain_builder.py)               |
+    | Request Validator     | [request_validator.py](./behavioral/01-chain-of-responsibility/request_validator.py)       |
+    | Content Processor     | [content_processor.py](./behavioral/01-chain-of-responsibility/content_processor.py)       |
 - Command
 - Interpreter
 - Iterator
