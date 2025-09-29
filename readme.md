@@ -126,6 +126,13 @@ Behavioral patterns are concerned with communication between objects. Examples i
     | Request Validator     | [request_validator.py](./behavioral/01-chain-of-responsibility/request_validator.py)       |
     | Content Processor     | [content_processor.py](./behavioral/01-chain-of-responsibility/content_processor.py)       |
 - Command
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./behavioral/02-command/main.py)                                                 |
+    | Smart Home            | [smart_home.py](./behavioral/02-command/smart_home.py)                                     |
+    | Scheduler             | [scheduler.py](./behavioral/02-command/scheduler.py)                                       |
+    | Command Bus           | [command_bus.py](./behavioral/02-command/command_bus.py)                                   |
+    | Database Transaction  | [database_transaction.py](./behavioral/02-command/database_transaction.py)                 |
 - Interpreter
 - Iterator
 - Mediator
