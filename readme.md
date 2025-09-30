@@ -133,8 +133,15 @@ Behavioral patterns are concerned with communication between objects. Examples i
     | Scheduler             | [scheduler.py](./behavioral/02-command/scheduler.py)                                       |
     | Command Bus           | [command_bus.py](./behavioral/02-command/command_bus.py)                                   |
     | Database Transaction  | [database_transaction.py](./behavioral/02-command/database_transaction.py)                 |
-- Interpreter
 - Iterator
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./behavioral/03-iterator/main.py)                                                |
+    | Book Shelf            | [book_shelf.py](./behavioral/03-iterator/book_shelf.py)                                    |
+    | Binary Tree           | [binary_tree.py](./behavioral/03-iterator/binary_tree.py)                                  |
+    | Log Analyzer          | [log_analyzer.py](./behavioral/03-iterator/log_analyzer.py)                                |
+    | API Paginated         | [api_paginated.py](./behavioral/03-iterator/api_paginated.py)                              |
+- Interpreter
 - Mediator
 - Memento
 - Observer
