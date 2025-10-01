@@ -141,8 +141,14 @@ Behavioral patterns are concerned with communication between objects. Examples i
     | Binary Tree           | [binary_tree.py](./behavioral/03-iterator/binary_tree.py)                                  |
     | Log Analyzer          | [log_analyzer.py](./behavioral/03-iterator/log_analyzer.py)                                |
     | API Paginated         | [api_paginated.py](./behavioral/03-iterator/api_paginated.py)                              |
-- Interpreter
 - Mediator
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./behavioral/04-mediator/main.py)                                                |
+    | Chat Room             | [chat_room.py](./behavioral/04-mediator/chat_room.py)                                      |
+    | Smart Home            | [smart_home.py](./behavioral/04-mediator/smart_home.py)                                    |
+    | Service Orchestrator  | [service_orchestrator.py](./behavioral/04-mediator/service_orchestrator.py)                |
+- Interpreter
 - Memento
 - Observer
 - State
