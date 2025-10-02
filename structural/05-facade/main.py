@@ -52,9 +52,6 @@ Real-world use cases:
 # Link: https://refactoring.guru/design-patterns/facade
 
 
-from abc import ABC, abstractmethod
-
-
 class DVDPlayer:
     def on(self):
         print("DVD Player is ON")

@@ -117,7 +117,7 @@ class Command(ABC):
 
 
 class TurnOnLightCommand(Command):
-    def __init__(self, light):
+    def __init__(self, light: Light):
         self._light = light
 
     def execute(self):
@@ -128,7 +128,7 @@ class TurnOnLightCommand(Command):
 
 
 class TurnOffLightCommand(Command):
-    def __init__(self, light):
+    def __init__(self, light: Light):
         self._light = light
 
     def execute(self):
@@ -139,7 +139,7 @@ class TurnOffLightCommand(Command):
 
 
 class SetTemperatureCommand(Command):
-    def __init__(self, thermostat, temp):
+    def __init__(self, thermostat: Thermostat, temp: int):
         self._thermostat = thermostat
         self._temp = temp
         self._prev_temp = thermostat._temperature
@@ -153,7 +153,7 @@ class SetTemperatureCommand(Command):
 
 # Macro Command
 class MacroCommand(Command):
-    def __init__(self, commands):
+    def __init__(self, commands: list[Command]):
         self._commands = commands
 
     def execute(self):
@@ -170,7 +170,7 @@ class RemoteControl:
     def __init__(self):
         self._command = None
 
-    def set_command(self, command):
+    def set_command(self, command: Command):
         self._command = command
 
     def press_execute(self):

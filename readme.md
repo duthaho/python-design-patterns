@@ -148,8 +148,14 @@ Behavioral patterns are concerned with communication between objects. Examples i
     | Chat Room             | [chat_room.py](./behavioral/04-mediator/chat_room.py)                                      |
     | Smart Home            | [smart_home.py](./behavioral/04-mediator/smart_home.py)                                    |
     | Service Orchestrator  | [service_orchestrator.py](./behavioral/04-mediator/service_orchestrator.py)                |
-- Interpreter
 - Memento
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./behavioral/05-memento/main.py)                                                 |
+    | Text Buffer           | [text_buffer.py](./behavioral/05-memento/text_buffer.py)                                   |
+    | Config Manager        | [config_manager.py](./behavioral/05-memento/config_manager.py)                             |
+    | Transaction Manager   | [transaction_manager.py](./behavioral/05-memento/transaction_manager.py)                   |
+- Interpreter
 - Observer
 - State
 - Strategy
