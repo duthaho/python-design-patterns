@@ -155,8 +155,15 @@ Behavioral patterns are concerned with communication between objects. Examples i
     | Text Buffer           | [text_buffer.py](./behavioral/05-memento/text_buffer.py)                                   |
     | Config Manager        | [config_manager.py](./behavioral/05-memento/config_manager.py)                             |
     | Transaction Manager   | [transaction_manager.py](./behavioral/05-memento/transaction_manager.py)                   |
-- Interpreter
 - Observer
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./behavioral/06-observer/main.py)                                                |
+    | Event Bus             | [event_bus.py](./behavioral/06-observer/event_bus.py)                                      |
+    | Domain Event          | [domain_event.py](./behavioral/06-observer/domain_event.py)                                |
+    | Stock Alert           | [stock_alert.py](./behavioral/06-observer/stock_alert.py)                                  |
+    | Service Monitor       | [service_monitor.py](./behavioral/06-observer/service_monitor.py)                          |
+- Interpreter
 - State
 - Strategy
 - Template Method
