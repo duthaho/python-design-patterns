@@ -163,8 +163,13 @@ Behavioral patterns are concerned with communication between objects. Examples i
     | Domain Event          | [domain_event.py](./behavioral/06-observer/domain_event.py)                                |
     | Stock Alert           | [stock_alert.py](./behavioral/06-observer/stock_alert.py)                                  |
     | Service Monitor       | [service_monitor.py](./behavioral/06-observer/service_monitor.py)                          |
-- Interpreter
 - State
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./behavioral/07-state/main.py)                                                   |
+    | Order Workflow        | [order_workflow.py](./behavioral/07-state/order_workflow.py)                               |
+    | Document Workflow     | [document_workflow.py](./behavioral/07-state/document_workflow.py)                         |
+- Interpreter
 - Strategy
 - Template Method
 - Visitor
