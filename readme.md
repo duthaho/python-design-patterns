@@ -169,8 +169,13 @@ Behavioral patterns are concerned with communication between objects. Examples i
     | Basic Example         | [main.py](./behavioral/07-state/main.py)                                                   |
     | Order Workflow        | [order_workflow.py](./behavioral/07-state/order_workflow.py)                               |
     | Document Workflow     | [document_workflow.py](./behavioral/07-state/document_workflow.py)                         |
-- Interpreter
 - Strategy
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./behavioral/08-strategy/main.py)                                                |
+    | Shipping Cost         | [shipping_cost.py](./behavioral/08-strategy/shipping_cost.py)                              |
+    | Pricing Engine        | [pricing_engine.py](./behavioral/08-strategy/pricing_engine.py)                            |
+- Interpreter
 - Template Method
 - Visitor
 
