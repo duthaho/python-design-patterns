@@ -181,9 +181,13 @@ Behavioral patterns are concerned with communication between objects. Examples i
     | Basic Example         | [main.py](./behavioral/09-template-method/main.py)                                         |
     | Data Pipeline         | [data_pipeline.py](./behavioral/09-template-method/data_pipeline.py)                       |
     | Order Processor       | [order_processor.py](./behavioral/09-template-method/order_processor.py)                   |
-- Interpreter
 - Visitor
-
+    | Exercise              | Code                                                                                       |
+    |-----------------------|--------------------------------------------------------------------------------------------|
+    | Basic Example         | [main.py](./behavioral/10-visitor/main.py)                                                 |
+    | Tax Calculator        | [tax_calculator.py](./behavioral/10-visitor/tax_calculator.py)                             |
+    | Document Export       | [document_export.py](./behavioral/10-visitor/document_export.py)                           |
+    | AST Calculator        | [ast_calculator.py](./behavioral/10-visitor/ast_calculator.py)                             |
 ---
 
 ## How to Use This Repository
