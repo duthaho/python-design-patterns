@@ -6,9 +6,18 @@ Pattern: Template Method + Strategy
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Protocol, runtime_checkable
 
 from ..core.notification import Notification, NotificationResult
+
+
+@runtime_checkable
+class ChannelProtocol(Protocol):
+    """Structural interface for channels and decorators."""
+
+    def send(self, notification: Notification) -> NotificationResult: ...
+    def close(self) -> None: ...
+    def health_check(self) -> bool: ...
 
 
 class NotificationChannel(ABC):
