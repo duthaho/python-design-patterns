@@ -50,7 +50,7 @@ class LoggingDecorator:
             )
             return NotificationResult(
                 success=False,
-                channel=self.wrapped.__class__.__name__,
+                channel=notification.channel,
                 message=str(e),
                 sent_at=None,
                 metadata={},

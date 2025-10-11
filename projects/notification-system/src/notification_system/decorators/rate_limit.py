@@ -41,12 +41,12 @@ class RateLimitDecorator:
             return self.wrapped.send(notification)
         else:
             error_message = (
-                f"Rate limit exceeded for {self.wrapped.__class__.__name__}. "
+                f"Rate limit exceeded for {notification.channel}. "
                 f"Notification {notification.notification_id} not sent."
             )
             return NotificationResult(
                 success=False,
-                channel=self.wrapped.__class__.__name__,
+                channel=notification.channel,
                 message=error_message,
                 sent_at=None,
                 metadata={

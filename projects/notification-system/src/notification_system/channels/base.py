@@ -49,7 +49,7 @@ class NotificationChannel(ABC):
             response_metadata = self.send_message(message, self._connection)
             result = NotificationResult(
                 success=True,
-                channel=self.__class__.__name__,
+                channel=notification.channel,
                 message="Notification sent successfully",
                 sent_at=datetime.utcnow(),
                 metadata=response_metadata,
@@ -66,7 +66,7 @@ class NotificationChannel(ABC):
             )
             result = NotificationResult(
                 success=False,
-                channel=self.__class__.__name__,
+                channel=notification.channel,
                 message=error_msg,
                 sent_at=None,
                 metadata={},

@@ -1,0 +1,83 @@
+# Event to Channel Mapping Configuration
+# Maps event types to notification channels and templates
+
+events:
+  # User-related events
+  user.signup:
+    description: "New user registration"
+    channels:
+      - email
+      - console
+    priority: high
+    template:
+      subject: "Welcome to {app_name}!"
+      body: |
+        Hello {username},
+
+        Welcome to our platform! Your account has been created successfully.
+
+        Email: {email}
+        Signup Date: {signup_date}
+
+        Best regards,
+        The Team
+
+  user.password_reset:
+    description: "Password reset request"
+    channels:
+      - email
+    priority: critical
+    template:
+      subject: "Password Reset Request"
+      body: |
+        Hello {username},
+
+        We received a request to reset your password.
+
+        Reset link: {reset_url}
+
+        If you didn't request this, please ignore this email.
+
+        This link expires in {expiry_hours} hours.
+
+  # Order-related events
+  order.placed:
+    description: "New order placed"
+    channels:
+      - email
+      - console
+    priority: high
+    template:
+      subject: "Order Confirmation #{order_id}"
+      body: |
+        Hello {customer_name},
+
+        Your order has been placed successfully!
+
+        Order ID: {order_id}
+        Total: {total_amount}
+        Items: {item_count}
+
+        Thank you for your purchase!
+
+  order.shipped:
+    description: "Order has been shipped"
+    channels:
+      - email
+    priority: normal
+    template:
+      subject: "Your Order #{order_id} Has Shipped!"
+      body: |
+        Great news! Your order is on its way.
+
+        Tracking Number: {tracking_number}
+        Carrier: {carrier}
+
+# Default settings for events not explicitly configured
+defaults:
+  priority: normal
+  channels:
+    - console
+  template:
+    subject: "Notification: {event_type}"
+    body: "Event {event_id} occurred at {timestamp}"

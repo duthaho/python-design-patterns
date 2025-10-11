@@ -37,7 +37,9 @@ class Settings:
         """Load configuration from YAML file."""
         path = Path(self.config_path)
         if not path.is_file():
-            raise ConfigurationError(f"Configuration file not found: {self.config_path}")
+            raise ConfigurationError(
+                f"Configuration file not found: {self.config_path}"
+            )
 
         try:
             with open(path, "r") as f:
@@ -45,7 +47,9 @@ class Settings:
         except yaml.YAMLError as e:
             raise ConfigurationError(f"Invalid YAML in config file: {str(e)}")
         except FileNotFoundError:
-            raise ConfigurationError(f"Configuration file not found: {self.config_path}")
+            raise ConfigurationError(
+                f"Configuration file not found: {self.config_path}"
+            )
 
         if raw_config is None:
             raw_config = {}
@@ -73,7 +77,9 @@ class Settings:
         """Get full configuration for a specific channel."""
         channels = self.config.get("channels", {})
         if channel_name not in channels:
-            raise ConfigurationError(f"Channel '{channel_name}' not found in configuration")
+            raise ConfigurationError(
+                f"Channel '{channel_name}' not found in configuration"
+            )
         return channels[channel_name]
 
     def _substitute_env_vars(self, config: Any) -> Any:
@@ -89,8 +95,8 @@ class Settings:
 
     def _parse_env_var(self, value: str) -> str:
         """Parse environment variable pattern and return value."""
-        pattern = re.compile(r'\$\{([^}:]+)(?::([^}]+))?\}')
-    
+        pattern = re.compile(r"\$\{([^}:]+)(?::([^}]+))?\}")
+
         def replace_match(match):
             var_name = match.group(1)
             default = match.group(2)
@@ -100,29 +106,92 @@ class Settings:
                     f"Environment variable '{var_name}' not set and no default provided"
                 )
             return env_value
-        
+
         # Replace all ${...} patterns in the string
         return pattern.sub(replace_match, value)
 
     def _validate(self, config: Dict[str, Any]) -> None:
         """Validate configuration structure."""
-        if "channels" not in config or not isinstance(config["channels"], dict):
-            raise ConfigurationError("Configuration must contain a 'channels' dictionary")
-        valid_decorators = {"logging", "retry", "rate_limit"}
-        for channel_name, channel_cfg in config["channels"].items():
+        if "channels" in config:
+            self._validate_channel_config(config["channels"])
+        elif "events" in config:
+            self._validate_event_config(config["events"])
+        else:
+            raise ConfigurationError(
+                "Configuration must contain either 'channels' or 'events' section"
+            )
+
+    def _validate_channel_config(self, config: Dict[str, Any]) -> None:
+        """Validate individual channel configuration."""
+        if not isinstance(config, dict):
+            raise ConfigurationError("Channels configuration must be a dictionary")
+
+        for name, channel_cfg in config.items():
             if not isinstance(channel_cfg, dict):
-                raise ConfigurationError(f"Channel '{channel_name}' configuration must be a dictionary")
-            if "type" not in channel_cfg or not isinstance(channel_cfg["type"], str):
-                raise ConfigurationError(f"Channel '{channel_name}' must have a 'type' string")
-            if "config" not in channel_cfg or not isinstance(channel_cfg["config"], dict):
-                raise ConfigurationError(f"Channel '{channel_name}' must have a 'config' dictionary")
-            decorators = channel_cfg.get("decorators", [])
-            if not isinstance(decorators, list):
-                raise ConfigurationError(f"Channel '{channel_name}' decorators must be a list")
-            for decorator in decorators:
-                decorator_type = decorator.get("type") if isinstance(decorator, dict) else decorator
-                if decorator_type not in valid_decorators:
-                    raise ConfigurationError(f"Invalid decorator '{decorator_type}' in channel '{channel_name}'")
+                raise ConfigurationError(
+                    f"Channel '{name}' configuration must be a dictionary"
+                )
+            if "type" not in channel_cfg:
+                raise ConfigurationError(f"Channel '{name}' missing required 'type'")
+            if "enabled" in channel_cfg and not isinstance(
+                channel_cfg["enabled"], bool
+            ):
+                raise ConfigurationError(
+                    f"Channel '{name}' 'enabled' must be a boolean"
+                )
+            if "config" in channel_cfg and not isinstance(channel_cfg["config"], dict):
+                raise ConfigurationError(
+                    f"Channel '{name}' 'config' must be a dictionary"
+                )
+            if "decorators" in channel_cfg:
+                if not isinstance(channel_cfg["decorators"], list) or not all(
+                    isinstance(d, dict) for d in channel_cfg["decorators"]
+                ):
+                    raise ConfigurationError(
+                        f"Channel '{name}' 'decorators' must be a list of dictionaries"
+                    )
+
+    def _validate_event_config(self, config: Dict[str, Any]) -> None:
+        """Validate event configuration structure."""
+        if not isinstance(config, dict):
+            raise ConfigurationError("Events configuration must be a dictionary")
+
+        for event_type, event_cfg in config.items():
+            if not isinstance(event_cfg, dict):
+                raise ConfigurationError(
+                    f"Event '{event_type}' configuration must be a dictionary"
+                )
+            if "channels" in event_cfg:
+                if not isinstance(event_cfg["channels"], list) or not all(
+                    isinstance(c, str) for c in event_cfg["channels"]
+                ):
+                    raise ConfigurationError(
+                        f"Event '{event_type}' 'channels' must be a list of strings"
+                    )
+            if "priority" in event_cfg:
+                if event_cfg["priority"] not in {
+                    "low",
+                    "normal",
+                    "medium",
+                    "high",
+                    "critical",
+                }:
+                    raise ConfigurationError(
+                        f"Event '{event_type}' has invalid 'priority' value"
+                    )
+            if "template" in event_cfg:
+                if not isinstance(event_cfg["template"], dict):
+                    raise ConfigurationError(
+                        f"Event '{event_type}' 'template' must be a dictionary"
+                    )
+                if "subject" not in event_cfg["template"]:
+                    raise ConfigurationError(
+                        f"Event '{event_type}' template missing required 'subject'"
+                    )
+                if "body" not in event_cfg["template"]:
+                    raise ConfigurationError(
+                        f"Event '{event_type}' template missing required 'body'"
+                    )
 
     @classmethod
     def from_dict(cls, config_dict: Dict[str, Any]) -> "Settings":

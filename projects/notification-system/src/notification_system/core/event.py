@@ -14,7 +14,7 @@ class EventPriority(Enum):
     """Priority levels for events."""
 
     LOW = "low"
-    MEDIUM = "medium"
+    MEDIUM = "normal"
     HIGH = "high"
     CRITICAL = "critical"
 

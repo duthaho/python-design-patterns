@@ -46,7 +46,7 @@ class TestConsoleChannel(unittest.TestCase):
         result = self.channel.send(self.notification)
 
         self.assertTrue(result.success)
-        self.assertEqual(result.channel, "ConsoleChannel")
+        self.assertEqual(result.channel, "console")
         self.assertIsNotNone(result.sent_at)
         mock_print.assert_called()  # Verify print was called
 

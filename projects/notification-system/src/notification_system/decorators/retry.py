@@ -86,7 +86,7 @@ class RetryDecorator:
                 )
                 return NotificationResult(
                     success=False,
-                    channel=self.wrapped.__class__.__name__,
+                    channel=notification.channel,
                     message=f"Permanent error: {str(e)}",
                     sent_at=None,
                     metadata={"error_type": "permanent", "attempt": attempt + 1},
@@ -99,7 +99,7 @@ class RetryDecorator:
                 )
                 return NotificationResult(
                     success=False,
-                    channel=self.wrapped.__class__.__name__,
+                    channel=notification.channel,
                     message=f"Unexpected error: {str(e)}",
                     sent_at=None,
                     metadata={"error_type": "unexpected", "attempt": attempt + 1},
@@ -108,7 +108,7 @@ class RetryDecorator:
         # All retries exhausted
         return NotificationResult(
             success=False,
-            channel=self.wrapped.__class__.__name__,
+            channel=notification.channel,
             message=f"Failed after {self.max_retries} retries: {str(last_error)}",
             sent_at=None,
             metadata={
