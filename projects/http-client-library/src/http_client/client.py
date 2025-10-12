@@ -277,7 +277,31 @@ class HTTPClientBuilder:
         """
         self._retry_strategy = retry_strategy
         return self
+    
+    def with_rate_limit(self, rate: float, capacity: int = None) -> 'HTTPClientBuilder':
+        """
+        Add rate limiting to the client.
+        
+        Args:
+            rate: Requests per second
+            capacity: Burst capacity (default: rate * 2)
+            
+        Returns:
+            Self for method chaining
+            
+        Example:
+            client = HTTPClient.builder() \\
+                .with_rate_limit(rate=10, capacity=20) \\
+                .build()
+        """
+        from .middlewares.rate_limit import RateLimitMiddleware
 
+        if capacity is None:
+            capacity = int(rate * 2)
+        rate_limit_middleware = RateLimitMiddleware(rate=rate, capacity=capacity)
+        self.add_middleware(rate_limit_middleware)
+        return self
+    
     def build(self) -> HTTPClient:
         """
         Build the configured HTTPClient.
