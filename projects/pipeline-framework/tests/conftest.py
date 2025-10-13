@@ -3,6 +3,7 @@
 import pytest
 from pipeline_framework.core.context import PipelineContext
 from pipeline_framework.core.task import Task
+from pipeline_framework.factories import TaskFactory
 
 
 @pytest.fixture
@@ -95,3 +96,30 @@ def multiply_task():
 def failing_task():
     """Provide a FailingTask instance."""
     return FailingTask()
+
+
+@pytest.fixture
+def factory():
+    """Provide a fresh TaskFactory instance."""
+    factory = TaskFactory()
+    yield factory
+    # Cleanup is automatic since it's a new instance
+
+
+@pytest.fixture
+def factory_with_tasks():
+    """Provide a factory with common tasks registered."""
+    from tests.conftest import AddTask, MultiplyTask
+
+    factory = TaskFactory()
+    factory.register("add", AddTask)
+    factory.register("multiply", MultiplyTask)
+    yield factory
+
+
+# Add teardown for tests using default factory
+@pytest.fixture(autouse=True)
+def reset_default_factory():
+    """Reset default factory after each test."""
+    yield
+    TaskFactory.reset_default()
