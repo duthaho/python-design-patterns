@@ -5,6 +5,8 @@ from typing import Any, Dict, List, Optional
 
 from ..events.event import EventType, PipelineEvent
 from ..events.listener import PipelineListener
+from ..strategies.base import ExecutionStrategy
+from ..strategies.sequential import SequentialStrategy
 from ..utils.exceptions import TaskExecutionError
 from .context import PipelineContext
 from .task import Task
@@ -20,7 +22,12 @@ class Pipeline:
     operating on a shared context.
     """
 
-    def __init__(self, name: str, description: Optional[str] = None):
+    def __init__(
+        self,
+        name: str,
+        description: Optional[str] = None,
+        strategy: Optional[ExecutionStrategy] = None,
+    ):
         """
         Initialize a pipeline.
 
@@ -30,6 +37,7 @@ class Pipeline:
         """
         self.name = name
         self.description = description or ""
+        self._strategy = strategy or SequentialStrategy()
         self._tasks: List[Task] = []
         self._listeners: List[PipelineListener] = []
 
@@ -85,6 +93,28 @@ class Pipeline:
             except Exception as e:
                 logger.error(f"Error in listener {listener}: {e}")
 
+    def set_strategy(self, strategy: ExecutionStrategy) -> "Pipeline":
+        """
+        Set the execution strategy for this pipeline.
+
+        Args:
+            strategy: Execution strategy to use
+
+        Returns:
+            Self for method chaining
+        """
+        self._strategy = strategy
+        return self
+
+    def get_strategy(self) -> ExecutionStrategy:
+        """
+        Get the current execution strategy.
+
+        Returns:
+            Current execution strategy
+        """
+        return self._strategy
+
     def add_task(self, task: Task) -> "Pipeline":
         """
         Add a task to the pipeline.
@@ -115,24 +145,40 @@ class Pipeline:
         """
         context = PipelineContext(initial_data)
 
+        # Emit pipeline started
         self._emit_event(EventType.PIPELINE_STARTED)
 
-        for task in self._tasks:
-            self._emit_event(EventType.TASK_STARTED, task_name=task.name)
-            try:
-                task.execute(context)
-                self._emit_event(EventType.TASK_COMPLETED, task_name=task.name)
-            except Exception as e:
-                self._emit_event(
-                    EventType.TASK_FAILED, task_name=task.name, metadata={"error": str(e)}
-                )
-                self._emit_event(
-                    EventType.PIPELINE_FAILED, metadata={"error": str(e), "failed_task": task.name}
-                )
-                raise TaskExecutionError(task.name, e) from e
+        # Set up event callback for strategy
+        def strategy_event_callback(
+            event_type_str: str, task_name: Optional[str], metadata: Optional[Dict[str, Any]]
+        ):
+            """Callback for strategy to emit task events."""
+            # Map string event types to EventType enum
+            event_type_map = {
+                "task_started": EventType.TASK_STARTED,
+                "task_completed": EventType.TASK_COMPLETED,
+                "task_failed": EventType.TASK_FAILED,
+                "task_skipped": None,  # Custom event type (optional)
+            }
 
-        self._emit_event(EventType.PIPELINE_COMPLETED)
-        return context
+            event_type = event_type_map.get(event_type_str)
+            if event_type:
+                self._emit_event(event_type, task_name=task_name, metadata=metadata)
+
+        # Give strategy ability to emit events
+        self._strategy.set_event_callback(strategy_event_callback)
+
+        try:
+            # Execute using strategy (which will now emit task events)
+            self._strategy.execute(self._tasks, context)
+
+            # Emit pipeline completed
+            self._emit_event(EventType.PIPELINE_COMPLETED)
+            return context
+        except Exception as e:
+            # Emit pipeline failed event
+            self._emit_event(EventType.PIPELINE_FAILED, metadata={"error": str(e)})
+            raise
 
     def get_tasks(self) -> List[Task]:
         """
