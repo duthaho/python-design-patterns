@@ -37,7 +37,7 @@ class PipelineData:
     def create(cls, payload: Dict[str, Any], **kwargs: Any) -> "PipelineData":
         """Factory method to create PipelineData with auto-generated ID."""
         return cls(
-            id=kwargs.get("id", str(uuid.uuid4())),
+            id=str(kwargs.get("id") or uuid.uuid4()),
             payload=payload,
             metadata=kwargs.get("metadata", {}),
             timestamp=kwargs.get("timestamp", datetime.now()),
