@@ -5,6 +5,8 @@ from typing import List, Optional
 from pipeline_framework.core.models import (PipelineConfig, PipelineData,
                                             ProcessingContext)
 from pipeline_framework.core.processor import Processor
+from pipeline_framework.sinks.base import Sink
+from pipeline_framework.sources.base import Source
 from pipeline_framework.strategies.state import StateStorage
 from pipeline_framework.utils.exceptions import PipelineException
 
@@ -77,6 +79,64 @@ class Pipeline:
         """
         results = self.execute([data])
         return results[0] if results else None
+
+    def execute_from_source(self, source: Source) -> List[ProcessingContext]:
+        """
+        Execute pipeline reading from a source.
+
+        Args:
+            source: Source to read data from
+
+        Returns:
+            List of ProcessingContext results
+
+        Example:
+            >>> from pipeline_framework.sources.file import CSVFileSource
+            >>> source = CSVFileSource("data.csv")
+            >>> results = pipeline.execute_from_source(source)
+            >>> source.close()
+        """
+        with source:
+            data_batch = source.read()
+            return self.execute(data_batch)
+
+    def execute_to_sink(self, data: List[PipelineData], sink: Sink) -> List[ProcessingContext]:
+        """
+        Execute pipeline and write results to sink.
+
+        Args:
+            data: Input data
+            sink: Sink to write results to
+
+        Returns:
+            List of ProcessingContext results
+        """
+        results = self.execute(data)
+        with sink:
+            sink.write(results)
+        return results
+
+    def execute_source_to_sink(self, source: Source, sink: Sink) -> List[ProcessingContext]:
+        """
+        Execute complete pipeline: source → processors → sink.
+
+        Args:
+            source: Source to read from
+            sink: Sink to write to
+
+        Returns:
+            List of ProcessingContext results
+
+        Example:
+            >>> source = CSVFileSource("input.csv")
+            >>> sink = JSONFileSink("output.json")
+            >>> results = pipeline.execute_source_to_sink(source, sink)
+        """
+        with source, sink:
+            data_batch = source.read()
+            results = self.execute(data_batch)
+            sink.write(results)
+            return results
 
     def get_state(self) -> dict:
         """Get current state from storage."""
