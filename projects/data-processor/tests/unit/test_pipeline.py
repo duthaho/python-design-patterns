@@ -1,10 +1,8 @@
 """Tests for pipeline orchestrator."""
 
-import pytest
 from pipeline_framework.core.models import PipelineData
 from pipeline_framework.core.pipeline import Pipeline
-from pipeline_framework.processors.stateful import (CounterProcessor,
-                                                    DeduplicationProcessor)
+from pipeline_framework.processors.stateful import CounterProcessor
 from pipeline_framework.strategies.state import InMemoryStateStorage
 
 

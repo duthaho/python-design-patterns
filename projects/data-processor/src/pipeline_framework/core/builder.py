@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional
 from pipeline_framework.core.models import PipelineConfig
 from pipeline_framework.core.pipeline import Pipeline
 from pipeline_framework.core.processor import Processor
+from pipeline_framework.observability.events import EventBus, Observer
 from pipeline_framework.sinks.base import Sink
 from pipeline_framework.sinks.factory import SinkFactory
 from pipeline_framework.sources.base import Source
@@ -33,6 +34,7 @@ class PipelineBuilder:
         self._pipeline_config: Optional[PipelineConfig] = None
         self._source: Optional[Source] = None
         self._sink: Optional[Sink] = None
+        self._event_bus: Optional[EventBus] = None
 
     def add_processor(self, processor: Processor) -> "PipelineBuilder":
         """
@@ -130,6 +132,38 @@ class PipelineBuilder:
         """
         self._sink = SinkFactory.create_from_config(config)
         return self
+    
+    def with_event_bus(self, event_bus: EventBus) -> "PipelineBuilder":
+        """
+        Set the event bus for observability.
+        
+        Args:
+            event_bus: EventBus instance
+            
+        Returns:
+            Self for method chaining
+        """
+        self._event_bus = event_bus
+        return self
+    
+    def with_observers(self, *observers: Observer) -> "PipelineBuilder":
+        """
+        Convenience method to add observers.
+        Creates event bus if not already set.
+        
+        Args:
+            *observers: Observer instances to add
+            
+        Returns:
+            Self for method chaining
+        """
+        if self._event_bus is None:
+            self._event_bus = EventBus()
+        
+        for observer in observers:
+            self._event_bus.subscribe(observer)
+        
+        return self
 
     def build(self) -> Pipeline:
         """
@@ -158,18 +192,12 @@ class PipelineBuilder:
             processor_chain=self._processors[0],
             state_storage=self._state_storage,
             pipeline_config=self._pipeline_config,
+            event_bus=self._event_bus,
         )
 
     def build_and_run(self) -> List:
         """
         Build pipeline, run with configured source, write to configured sink.
-
-        This is a convenience method that:
-        1. Builds the pipeline
-        2. Reads data from source (if configured)
-        3. Executes the pipeline
-        4. Writes results to sink (if configured)
-        5. Properly closes source and sink
 
         Returns:
             List of ProcessingContext results
@@ -203,4 +231,5 @@ class PipelineBuilder:
         self._pipeline_config = None
         self._source = None
         self._sink = None
+        self._event_bus = None
         return self
